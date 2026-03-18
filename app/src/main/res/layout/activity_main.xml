@@ -2,31 +2,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B1020"
+    android:background="#0A0F1C"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="10dp">
+        android:gravity="end"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="AIGOR Chat"
-            android:textColor="#F9FAFB"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/openSettingsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Settings" />
+        <ImageButton
+            android:id="@+id/overflowMenuButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="#111827"
+            android:contentDescription="Menu"
+            android:src="@android:drawable/ic_menu_more"
+            android:tint="#E5E7EB" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -45,7 +39,8 @@
         android:paddingHorizontal="12dp"
         android:paddingBottom="6dp"
         android:text="Estat: llest"
-        android:textColor="#9CA3AF" />
+        android:textColor="#9CA3AF"
+        android:textSize="12sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -71,7 +66,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Enviar" />
+            android:backgroundTint="#EF4444"
+            android:text="Send"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
 </LinearLayout>

@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,10 +43,28 @@ class MainActivity : AppCompatActivity() {
         consumeSharedText(intent)
 
         val sendButton: Button = findViewById(R.id.sendButton)
-        val openSettingsButton: Button = findViewById(R.id.openSettingsButton)
+        val overflowMenuButton: ImageButton = findViewById(R.id.overflowMenuButton)
 
-        openSettingsButton.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+        overflowMenuButton.setOnClickListener { anchor ->
+            val popup = PopupMenu(this, anchor)
+            popup.menuInflater.inflate(R.menu.main_overflow_menu, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menu_settings -> {
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                        true
+                    }
+                    R.id.menu_clear_chat -> {
+                        messages.clear()
+                        adapter.notifyDataSetChanged()
+                        saveHistory()
+                        statusText.text = "Estat: xat netejat"
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
 
         sendButton.setOnClickListener {
@@ -67,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
             addMessage(ChatMessage("user", message))
             messageEdit.setText("")
-            addMessage(ChatMessage("assistant", "AIGOR està pensant..."))
+            addMessage(ChatMessage("typing", ""))
             sendToOpenClaw(endpoint, token, message)
         }
     }
@@ -154,6 +174,11 @@ class MainActivity : AppCompatActivity() {
                 obj.has("response") -> obj.optString("response")
                 obj.has("message") -> obj.optString("message")
                 obj.has("text") -> obj.optString("text")
+                obj.has("ok") && !obj.optBoolean("ok", false) -> {
+                    val err = obj.optString("error", "error desconegut")
+                    val details = obj.optString("details", "")
+                    "Error bridge: $err${if (details.isNotBlank()) "\n$details" else ""}"
+                }
                 obj.has("ok") -> "Missatge enviat ✅"
                 else -> body
             }
@@ -180,7 +205,10 @@ class MainActivity : AppCompatActivity() {
             val arr = JSONArray(raw)
             for (i in 0 until arr.length()) {
                 val o = arr.getJSONObject(i)
-                messages.add(ChatMessage(o.optString("role", "assistant"), o.optString("text", ""), o.optLong("ts", 0L)))
+                val role = o.optString("role", "assistant")
+                if (role != "typing") {
+                    messages.add(ChatMessage(role, o.optString("text", ""), o.optLong("ts", 0L)))
+                }
             }
         } catch (_: Exception) {
         }

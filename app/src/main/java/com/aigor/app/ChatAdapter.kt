@@ -3,32 +3,67 @@ package com.aigor.app
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class ChatAdapter(private val items: MutableList<ChatMessage>) : RecyclerView.Adapter<ChatAdapter.MessageVH>() {
+class ChatAdapter(private val items: MutableList<ChatMessage>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private const val VIEW_USER = 1
         private const val VIEW_BOT = 2
+        private const val VIEW_TYPING = 3
     }
 
     class MessageVH(view: View) : RecyclerView.ViewHolder(view) {
         val text: TextView = view.findViewById(R.id.messageText)
     }
 
+    class TypingVH(view: View) : RecyclerView.ViewHolder(view) {
+        val d1: TextView = view.findViewById(R.id.dot1)
+        val d2: TextView = view.findViewById(R.id.dot2)
+        val d3: TextView = view.findViewById(R.id.dot3)
+    }
+
     override fun getItemViewType(position: Int): Int {
-        return if (items[position].role == "user") VIEW_USER else VIEW_BOT
+        return when (items[position].role) {
+            "user" -> VIEW_USER
+            "typing" -> VIEW_TYPING
+            else -> VIEW_BOT
+        }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageVH {
-        val layout = if (viewType == VIEW_USER) R.layout.item_message_user else R.layout.item_message_bot
-        val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-        return MessageVH(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            VIEW_USER -> MessageVH(inflater.inflate(R.layout.item_message_user, parent, false))
+            VIEW_TYPING -> TypingVH(inflater.inflate(R.layout.item_message_typing, parent, false))
+            else -> MessageVH(inflater.inflate(R.layout.item_message_bot, parent, false))
+        }
     }
 
-    override fun onBindViewHolder(holder: MessageVH, position: Int) {
-        holder.text.text = items[position].text
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is MessageVH -> holder.text.text = items[position].text
+            is TypingVH -> startTypingAnimation(holder)
+        }
+    }
+
+    private fun startTypingAnimation(holder: TypingVH) {
+        animateDot(holder.d1, 0)
+        animateDot(holder.d2, 160)
+        animateDot(holder.d3, 320)
+    }
+
+    private fun animateDot(view: TextView, offset: Long) {
+        val anim = AlphaAnimation(0.25f, 1f).apply {
+            duration = 450
+            repeatMode = Animation.REVERSE
+            repeatCount = Animation.INFINITE
+            startOffset = offset
+        }
+        view.startAnimation(anim)
     }
 
     override fun getItemCount(): Int = items.size
