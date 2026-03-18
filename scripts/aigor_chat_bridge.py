@@ -114,8 +114,8 @@ def synthesize_tts_audio(text: str, lang_hint: str = "ca"):
         subprocess.run([
             EDGE_TTS,
             "--voice", voice,
-            "--rate", rate,
-            "--pitch", pitch,
+            f"--rate={rate}",
+            f"--pitch={pitch}",
             "--text", text,
             "--write-media", out,
         ], capture_output=True, text=True, timeout=90, check=True)
