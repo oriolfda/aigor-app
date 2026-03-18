@@ -1,8 +1,10 @@
 package com.aigor.app
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Base64
 import android.view.View
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -45,6 +48,25 @@ class MainActivity : AppCompatActivity() {
     private var pendingAttachment: AttachmentData? = null
 
     private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) handlePickedMedia(uri)
+    }
+
+    private val takePicturePreviewLauncher = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
+        if (bitmap != null) {
+            val b64 = bitmapToBase64(bitmap)
+            pendingAttachment = AttachmentData(name = "camera-photo.jpg", mime = "image/jpeg", base64 = b64)
+            attachButton.text = "📎"
+            statusText.text = "Foto preparada"
+        }
+    }
+
+    private val captureVideoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        val uri = res.data?.data
+        if (uri != null) handlePickedMedia(uri)
+    }
+
+    private val recordAudioLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        val uri = res.data?.data
         if (uri != null) handlePickedMedia(uri)
     }
 
@@ -96,8 +118,36 @@ class MainActivity : AppCompatActivity() {
             popup.show()
         }
 
-        attachButton.setOnClickListener {
-            pickMediaLauncher.launch("*/*")
+        attachButton.setOnClickListener { anchor ->
+            val popup = PopupMenu(this, anchor)
+            popup.menu.add(0, 1, 0, "Fer foto")
+            popup.menu.add(0, 2, 1, "Gravar vídeo")
+            popup.menu.add(0, 3, 2, "Gravar àudio")
+            popup.menu.add(0, 4, 3, "Triar fitxer")
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    1 -> {
+                        takePicturePreviewLauncher.launch(null)
+                        true
+                    }
+                    2 -> {
+                        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+                        captureVideoLauncher.launch(intent)
+                        true
+                    }
+                    3 -> {
+                        val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION)
+                        recordAudioLauncher.launch(intent)
+                        true
+                    }
+                    4 -> {
+                        pickMediaLauncher.launch("*/*")
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
 
         sendButton.setOnClickListener {
@@ -193,6 +243,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        return Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+    }
+
     private fun currentTheme(): ThemeManager.UiTheme {
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
         return ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "html_match"))
@@ -207,6 +263,8 @@ class MainActivity : AppCompatActivity() {
         messageEdit.setTextColor(theme.messageTextColor)
         messageEdit.setHintTextColor(theme.messageHintColor)
         messageEdit.setBackgroundResource(theme.inputBg)
+        attachButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
+        attachButton.setTextColor(theme.menuDotsColor)
         sendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
         sendButton.setTextColor(theme.sendText)
     }
