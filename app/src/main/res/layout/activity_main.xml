@@ -22,14 +22,14 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <Button
+        <ImageButton
             android:id="@+id/overflowMenuButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
-            android:text="⋮"
-            android:textColor="#E5E7EB"
-            android:textSize="30sp" />
+            android:contentDescription="Menu"
+            android:padding="8dp"
+            android:src="@drawable/ic_more_vert_custom" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

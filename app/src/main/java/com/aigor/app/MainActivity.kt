@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rootLayout: View
     private lateinit var titleText: TextView
-    private lateinit var overflowMenuButton: Button
+    private lateinit var overflowMenuButton: ImageButton
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
     private lateinit var chatRecycler: RecyclerView
@@ -136,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout.setBackgroundColor(theme.screenBg)
         titleText.setTextColor(theme.titleColor)
         statusText.setTextColor(theme.statusColor)
-        overflowMenuButton.setTextColor(theme.menuDotsColor)
+        overflowMenuButton.setColorFilter(theme.menuDotsColor)
         overflowMenuButton.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         messageEdit.setTextColor(theme.messageTextColor)
         messageEdit.setHintTextColor(theme.messageHintColor)
@@ -169,8 +170,8 @@ class MainActivity : AppCompatActivity() {
                     requestMethod = "POST"
                     setRequestProperty("Content-Type", "application/json")
                     setRequestProperty("Authorization", "Bearer $token")
-                    connectTimeout = 15000
-                    readTimeout = 20000
+                    connectTimeout = 20000
+                    readTimeout = 120000
                     doOutput = true
                 }
 

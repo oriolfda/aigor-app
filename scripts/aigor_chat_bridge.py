@@ -2,7 +2,7 @@
 import json
 import os
 import subprocess
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HOST = os.environ.get("AIGOR_BRIDGE_HOST", "0.0.0.0")
 PORT = int(os.environ.get("AIGOR_BRIDGE_PORT", "8091"))
@@ -61,11 +61,15 @@ def run_openclaw_json(cmd, timeout=180):
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code: int, payload: dict):
         body = json.dumps(payload).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # Client disconnected before response was written.
+            return
 
     def _auth_ok(self):
         if not TOKEN:
@@ -193,7 +197,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    srv = HTTPServer((HOST, PORT), Handler)
+    srv = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"AIGOR bridge listening on http://{HOST}:{PORT} (/chat, /status)")
     srv.serve_forever()
 
