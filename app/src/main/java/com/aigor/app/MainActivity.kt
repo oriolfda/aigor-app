@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         consumeSharedText(intent)
 
         val sendButton: Button = findViewById(R.id.sendButton)
-        val overflowMenuButton: ImageButton = findViewById(R.id.overflowMenuButton)
+        val overflowMenuButton: Button = findViewById(R.id.overflowMenuButton)
 
         overflowMenuButton.setOnClickListener { anchor ->
             val popup = PopupMenu(this, anchor)

@@ -13,14 +13,14 @@
         android:paddingTop="8dp"
         android:paddingBottom="4dp">
 
-        <ImageButton
+        <Button
             android:id="@+id/overflowMenuButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="#111827"
-            android:contentDescription="Menu"
-            android:src="@android:drawable/ic_menu_more"
-            android:tint="#E5E7EB" />
+            android:backgroundTint="#111827"
+            android:text="⋮"
+            android:textColor="#E5E7EB"
+            android:textSize="18sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
