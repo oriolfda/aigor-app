@@ -16,40 +16,39 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var endpointEdit: EditText
-    private lateinit var tokenEdit: EditText
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
+    private lateinit var responseText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        endpointEdit = findViewById(R.id.endpointEdit)
-        tokenEdit = findViewById(R.id.tokenEdit)
         messageEdit = findViewById(R.id.messageEdit)
         statusText = findViewById(R.id.statusText)
-        val sendButton: Button = findViewById(R.id.sendButton)
+        responseText = findViewById(R.id.responseText)
 
-        val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
-        val savedEndpoint = prefs.getString("openclaw_endpoint", "http://192.168.0.102:18789/hooks/wake")
-        val savedToken = prefs.getString("openclaw_hook_token", "")
-        endpointEdit.setText(savedEndpoint)
-        tokenEdit.setText(savedToken)
+        val sendButton: Button = findViewById(R.id.sendButton)
+        val openSettingsButton: Button = findViewById(R.id.openSettingsButton)
 
         consumeSharedText(intent)
 
+        openSettingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
         sendButton.setOnClickListener {
-            val endpoint = endpointEdit.text.toString().trim()
-            val token = tokenEdit.text.toString().trim()
+            val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
+            val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
+            val token = prefs.getString("openclaw_hook_token", "").orEmpty().trim()
             val message = messageEdit.text.toString().trim()
 
             if (endpoint.isBlank()) {
-                statusText.text = "Estat: falta endpoint"
+                statusText.text = "Estat: falta endpoint (Settings)"
                 return@setOnClickListener
             }
             if (token.isBlank()) {
-                statusText.text = "Estat: falta token"
+                statusText.text = "Estat: falta token (Settings)"
                 return@setOnClickListener
             }
             if (message.isBlank()) {
@@ -57,10 +56,6 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            prefs.edit()
-                .putString("openclaw_endpoint", endpoint)
-                .putString("openclaw_hook_token", token)
-                .apply()
             sendToOpenClaw(endpoint, token, message)
         }
     }
@@ -94,6 +89,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendToOpenClaw(endpoint: String, token: String, message: String) {
         statusText.text = "Estat: enviant..."
+        responseText.text = "(esperant resposta...)"
 
         thread {
             try {
@@ -134,14 +130,16 @@ class MainActivity : AppCompatActivity() {
                     if (code in 200..299) {
                         statusText.text = "Estat: enviat OK ($code)"
                     } else {
-                        statusText.text = "Estat: error HTTP $code ${body.take(120)}"
+                        statusText.text = "Estat: error HTTP $code"
                     }
+                    responseText.text = if (body.isBlank()) "(resposta buida)" else body
                 }
 
                 conn.disconnect()
             } catch (e: Exception) {
                 runOnUiThread {
                     statusText.text = "Estat: error ${e.message}"
+                    responseText.text = "(sense resposta per error de connexió)"
                 }
             }
         }

@@ -12,6 +12,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AigorApp">
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
