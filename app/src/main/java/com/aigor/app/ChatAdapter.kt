@@ -8,7 +8,7 @@ import android.view.animation.Animation
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class ChatAdapter(private val items: MutableList<ChatMessage>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatAdapter(private val items: MutableList<ChatMessage>, private var theme: ThemeManager.UiTheme) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private const val VIEW_USER = 1
@@ -45,8 +45,25 @@ class ChatAdapter(private val items: MutableList<ChatMessage>) : RecyclerView.Ad
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is MessageVH -> holder.text.text = items[position].text
-            is TypingVH -> startTypingAnimation(holder)
+            is MessageVH -> {
+                val item = items[position]
+                holder.text.text = item.text
+                if (item.role == "user") {
+                    holder.text.setBackgroundResource(theme.userBubble)
+                    holder.text.setTextColor(theme.userText)
+                } else {
+                    holder.text.setBackgroundResource(theme.botBubble)
+                    holder.text.setTextColor(theme.botText)
+                }
+            }
+            is TypingVH -> {
+                val bubble = holder.itemView.findViewById<View>(R.id.typingBubble)
+                bubble?.setBackgroundResource(theme.botBubble)
+                holder.d1.setTextColor(theme.typingDots)
+                holder.d2.setTextColor(theme.typingDots)
+                holder.d3.setTextColor(theme.typingDots)
+                startTypingAnimation(holder)
+            }
         }
     }
 
@@ -78,5 +95,10 @@ class ChatAdapter(private val items: MutableList<ChatMessage>) : RecyclerView.Ad
             items[items.lastIndex] = message
             notifyItemChanged(items.lastIndex)
         }
+    }
+
+    fun setTheme(newTheme: ThemeManager.UiTheme) {
+        theme = newTheme
+        notifyDataSetChanged()
     }
 }

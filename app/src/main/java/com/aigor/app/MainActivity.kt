@@ -2,6 +2,7 @@ package com.aigor.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.PopupMenu
@@ -20,9 +21,13 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var rootLayout: View
+    private lateinit var titleText: TextView
+    private lateinit var overflowMenuButton: Button
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
     private lateinit var chatRecycler: RecyclerView
+    private lateinit var sendButton: Button
     private lateinit var adapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
 
@@ -30,19 +35,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        rootLayout = findViewById(R.id.rootLayout)
+        titleText = findViewById(R.id.titleText)
+        overflowMenuButton = findViewById(R.id.overflowMenuButton)
         messageEdit = findViewById(R.id.messageEdit)
         statusText = findViewById(R.id.statusText)
         chatRecycler = findViewById(R.id.chatRecycler)
+        sendButton = findViewById(R.id.sendButton)
 
-        adapter = ChatAdapter(messages)
+        val theme = currentTheme()
+        adapter = ChatAdapter(messages, theme)
         chatRecycler.layoutManager = LinearLayoutManager(this)
         chatRecycler.adapter = adapter
+        applyTheme(theme)
 
         loadHistory()
         consumeSharedText(intent)
-
-        val sendButton: Button = findViewById(R.id.sendButton)
-        val overflowMenuButton: Button = findViewById(R.id.overflowMenuButton)
 
         overflowMenuButton.setOnClickListener { anchor ->
             val popup = PopupMenu(this, anchor)
@@ -95,6 +103,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val theme = currentTheme()
+        applyTheme(theme)
+        adapter.setTheme(theme)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         consumeSharedText(intent)
@@ -110,6 +125,24 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = "Estat: text compartit carregat"
             }
         }
+    }
+
+    private fun currentTheme(): ThemeManager.UiTheme {
+        val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
+        return ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "ember_dark"))
+    }
+
+    private fun applyTheme(theme: ThemeManager.UiTheme) {
+        rootLayout.setBackgroundColor(theme.screenBg)
+        titleText.setTextColor(theme.titleColor)
+        statusText.setTextColor(theme.statusColor)
+        overflowMenuButton.setTextColor(theme.menuDotsColor)
+        overflowMenuButton.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        messageEdit.setTextColor(theme.messageTextColor)
+        messageEdit.setHintTextColor(theme.messageHintColor)
+        messageEdit.setBackgroundResource(theme.inputBg)
+        sendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
+        sendButton.setTextColor(theme.sendText)
     }
 
     private fun extractUrls(text: String): List<String> {
