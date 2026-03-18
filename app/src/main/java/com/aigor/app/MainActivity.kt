@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                         messages.clear()
                         adapter.notifyDataSetChanged()
                         saveHistory()
-                        statusText.text = "Estat: xat netejat"
+                        statusText.text = getString(R.string.status_chat_cleared)
                         true
                     }
                     else -> false
@@ -246,13 +246,13 @@ class MainActivity : AppCompatActivity() {
 
                         if (deltaLeft > 120f) {
                             cancelRecording()
-                            statusText.text = "Gravació cancel·lada (lliscar esquerra)"
+                            statusText.text = getString(R.string.recording_cancelled_swipe)
                             return@setOnTouchListener true
                         }
 
                         if (deltaUp > 140f) {
                             isRecordingLocked = true
-                            statusText.text = "Enregistrament bloquejat 🔒"
+                            statusText.text = getString(R.string.recording_locked)
                         }
                     }
                     true
@@ -612,7 +612,7 @@ class MainActivity : AppCompatActivity() {
         }
         currentRecordingFile?.delete()
         cleanupRecorderState()
-        statusText.text = "Gravació descartada"
+        statusText.text = getString(R.string.recording_discarded)
     }
 
     private fun stopRecordingAndAttach(sendNow: Boolean) {

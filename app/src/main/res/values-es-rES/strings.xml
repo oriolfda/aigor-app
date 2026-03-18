@@ -9,4 +9,16 @@
     <string name="save">Guardar</string>
     <string name="saved_ok">Configuración guardada ✅</string>
     <string name="lang_auto">Automático (sistema)</string>
+    <string name="menu_status">Estado de contexto</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_about">Acerca de</string>
+    <string name="menu_clear_chat">Limpiar chat</string>
+    <string name="hint_write_message">Escribe un mensaje...</string>
+    <string name="remove">Quitar</string>
+    <string name="sent_audios">▶ Audios enviados</string>
+    <string name="recording_cancelled_swipe">Grabación cancelada (desliza izquierda)</string>
+    <string name="recording_locked">Grabación bloqueada 🔒</string>
+    <string name="recording_discarded">Grabación descartada</string>
+    <string name="status_chat_cleared">Estado: chat limpiado</string>
+    <string name="fill_endpoint_token">Completa endpoint y token</string>
 </resources>

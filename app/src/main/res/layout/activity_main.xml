@@ -93,7 +93,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Treure" />
+                android:text="@string/remove" />
         </LinearLayout>
 
         <Button
@@ -101,7 +101,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
-            android:text="▶ Àudios enviats"
+            android:text="@string/sent_audios"
             android:visibility="gone" />
 
         <LinearLayout
@@ -126,7 +126,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:hint="Escriu un missatge..."
+                    android:hint="@string/hint_write_message"
                     android:inputType="textMultiLine|textCapSentences"
                     android:maxLines="4"
                     android:textColor="#F9FAFB"

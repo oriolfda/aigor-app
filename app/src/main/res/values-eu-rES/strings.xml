@@ -9,4 +9,16 @@
     <string name="save">Gorde</string>
     <string name="saved_ok">Ezarpenak gordeta ✅</string>
     <string name="lang_auto">Automatikoa (sistema)</string>
+    <string name="menu_status">Testuinguruaren egoera</string>
+    <string name="menu_settings">Ezarpenak</string>
+    <string name="menu_about">Honi buruz</string>
+    <string name="menu_clear_chat">Txata garbitu</string>
+    <string name="hint_write_message">Idatzi mezua...</string>
+    <string name="remove">Kendu</string>
+    <string name="sent_audios">▶ Bidalitako audioak</string>
+    <string name="recording_cancelled_swipe">Grabazioa ezeztatuta (ezkerrera)</string>
+    <string name="recording_locked">Grabazioa blokeatuta 🔒</string>
+    <string name="recording_discarded">Grabazioa baztertuta</string>
+    <string name="status_chat_cleared">Egoera: txata garbituta</string>
+    <string name="fill_endpoint_token">Bete endpoint eta tokena</string>
 </resources>

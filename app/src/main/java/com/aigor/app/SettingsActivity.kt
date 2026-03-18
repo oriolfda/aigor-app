@@ -71,7 +71,7 @@ class SettingsActivity : AppCompatActivity() {
             val showTranscriptions = showTranscriptionsCheck.isChecked
 
             if (endpoint.isBlank() || token.isBlank()) {
-                statusText.text = "Omple endpoint i token"
+                statusText.text = getString(R.string.fill_endpoint_token)
                 return@setOnClickListener
             }
 
