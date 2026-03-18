@@ -15,3 +15,6 @@ local.properties
 *.pem
 
 app/build/
+
+.secure/
+keystore.properties
