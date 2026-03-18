@@ -97,4 +97,6 @@
     <string name="image_preview_title">Previsualització imatge</string>
     <string name="video_preview_title">Previsualització vídeo</string>
     <string name="html_open_expanded">↗ Obre ampliat</string>
+    <string name="transcribing_audio">Transcrivint àudio...</string>
+    <string name="transcribe_only_prompt">Transcriu només aquest àudio i prou.</string>
 </resources>

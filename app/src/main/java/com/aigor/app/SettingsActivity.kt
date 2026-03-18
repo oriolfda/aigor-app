@@ -1,12 +1,14 @@
 package com.aigor.app
 
 import android.os.Bundle
+import android.content.res.ColorStateList
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
+import com.google.android.material.button.MaterialButton
 import androidx.appcompat.app.AppCompatActivity
 
 class SettingsActivity : AppCompatActivity() {
@@ -21,15 +23,27 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
+        val root: ScrollView = findViewById(R.id.settingsRoot)
         val endpointEdit: EditText = findViewById(R.id.settingsEndpointEdit)
         val tokenEdit: EditText = findViewById(R.id.settingsTokenEdit)
         val themeSpinner: Spinner = findViewById(R.id.themeSpinner)
         val languageSpinner: Spinner = findViewById(R.id.languageSpinner)
         val showTranscriptionsCheck: CheckBox = findViewById(R.id.showTranscriptionsCheck)
-        val saveButton: Button = findViewById(R.id.saveSettingsButton)
+        val saveButton: MaterialButton = findViewById(R.id.saveSettingsButton)
         val statusText: TextView = findViewById(R.id.settingsStatusText)
 
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
+        val uiTheme = ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "html_match"))
+        root.setBackgroundColor(uiTheme.screenBg)
+        endpointEdit.setTextColor(uiTheme.messageTextColor)
+        endpointEdit.setHintTextColor(uiTheme.messageHintColor)
+        endpointEdit.setBackgroundResource(uiTheme.inputBg)
+        tokenEdit.setTextColor(uiTheme.messageTextColor)
+        tokenEdit.setHintTextColor(uiTheme.messageHintColor)
+        tokenEdit.setBackgroundResource(uiTheme.inputBg)
+        statusText.setTextColor(uiTheme.statusColor)
+        saveButton.backgroundTintList = ColorStateList.valueOf(uiTheme.sendTint)
+        saveButton.setTextColor(uiTheme.sendText)
         endpointEdit.setText(prefs.getString("openclaw_endpoint", "http://192.168.0.102:8092/chat"))
         tokenEdit.setText(prefs.getString("openclaw_hook_token", ""))
 

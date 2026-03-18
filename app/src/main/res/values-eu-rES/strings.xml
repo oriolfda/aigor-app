@@ -95,4 +95,6 @@
     <string name="image_preview_title">Irudi aurrebista</string>
     <string name="html_open_expanded">↗ Ireki handituta</string>
     <string name="video_preview_title">Bideo aurrebista</string>
+    <string name="transcribing_audio">Audioa transkribatzen...</string>
+    <string name="transcribe_only_prompt">Transkribatu audio hau bakarrik.</string>
 </resources>

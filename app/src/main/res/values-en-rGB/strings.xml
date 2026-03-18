@@ -95,4 +95,6 @@
     <string name="image_preview_title">Image preview</string>
     <string name="html_open_expanded">↗ Open expanded</string>
     <string name="video_preview_title">Video preview</string>
+    <string name="transcribing_audio">Transcribing audio...</string>
+    <string name="transcribe_only_prompt">Transcribe only this audio.</string>
 </resources>

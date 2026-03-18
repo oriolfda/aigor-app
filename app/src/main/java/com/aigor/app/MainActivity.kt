@@ -160,25 +160,34 @@ class MainActivity : AppCompatActivity() {
         appliedUiLocale = getSharedPreferences("aigor_prefs", MODE_PRIVATE).getString("ui_locale", "auto") ?: "auto"
 
         val theme = currentTheme()
-        adapter = ChatAdapter(messages, theme) { msg ->
-            when {
-                !msg.audioPath.isNullOrBlank() || !msg.audioUrl.isNullOrBlank() || !msg.ttsText.isNullOrBlank() -> {
-                    toggleAudioPlayback(msg)
+        adapter = ChatAdapter(
+            messages,
+            theme,
+            onMessageClick = { msg ->
+                when {
+                    !msg.audioPath.isNullOrBlank() || !msg.audioUrl.isNullOrBlank() || !msg.ttsText.isNullOrBlank() -> {
+                        toggleAudioPlayback(msg)
+                    }
+                    !msg.imagePath.isNullOrBlank() -> {
+                        showImagePreview(msg.imagePath)
+                    }
+                    !msg.videoPath.isNullOrBlank() -> {
+                        openVideo(msg.videoPath)
+                    }
+                    Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(msg.text) -> {
+                        showHtmlPreview(msg.text)
+                    }
                 }
-                !msg.imagePath.isNullOrBlank() -> {
-                    showImagePreview(msg.imagePath)
-                }
-                !msg.videoPath.isNullOrBlank() -> {
-                    openVideo(msg.videoPath)
-                }
-                Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(msg.text) -> {
-                    showHtmlPreview(msg.text)
-                }
+            },
+            onAudioTranscribeClick = { msg ->
+                requestTranscription(msg)
             }
-        }
+        )
         chatRecycler.layoutManager = LinearLayoutManager(this)
         chatRecycler.adapter = adapter
         applyTheme(theme)
+        val showTranscriptions = getSharedPreferences("aigor_prefs", MODE_PRIVATE).getBoolean("show_transcriptions", true)
+        adapter.setShowTranscriptionOption(!showTranscriptions)
 
         loadHistory()
         consumeSharedText(intent)
@@ -384,6 +393,8 @@ class MainActivity : AppCompatActivity() {
         val theme = currentTheme()
         applyTheme(theme)
         adapter.setTheme(theme)
+        val showTranscriptions = prefs.getBoolean("show_transcriptions", true)
+        adapter.setShowTranscriptionOption(!showTranscriptions)
     }
 
     override fun onDestroy() {
@@ -445,6 +456,41 @@ class MainActivity : AppCompatActivity() {
         return contentResolver.query(uri, null, null, null, null)?.use { cursor ->
             val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+        }
+    }
+
+    private fun requestTranscription(msg: ChatMessage) {
+        thread {
+            try {
+                val bytes = when {
+                    !msg.audioPath.isNullOrBlank() -> {
+                        val f = File(msg.audioPath)
+                        if (!f.exists()) null else f.readBytes()
+                    }
+                    !msg.audioUrl.isNullOrBlank() -> {
+                        URL(msg.audioUrl).openStream().use { it.readBytes() }
+                    }
+                    else -> null
+                }
+                if (bytes == null) {
+                    runOnUiThread { statusText.text = getString(R.string.local_audio_not_found) }
+                    return@thread
+                }
+                val attachment = AttachmentData(
+                    name = "transcription-audio.m4a",
+                    mime = "audio/mp4",
+                    base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                )
+                runOnUiThread {
+                    addMessage(ChatMessage("assistant", getString(R.string.transcribing_audio)))
+                }
+                val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
+                val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
+                val token = prefs.getString("openclaw_hook_token", "").orEmpty().trim()
+                sendToOpenClaw(endpoint, token, getString(R.string.transcribe_only_prompt), attachment)
+            } catch (e: Exception) {
+                runOnUiThread { statusText.text = getString(R.string.attachment_error, e.message) }
+            }
         }
     }
 

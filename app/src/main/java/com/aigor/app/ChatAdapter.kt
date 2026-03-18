@@ -21,9 +21,11 @@ class ChatAdapter(
     private val items: MutableList<ChatMessage>,
     private var theme: ThemeManager.UiTheme,
     private val onMessageClick: ((ChatMessage) -> Unit)? = null,
+    private val onAudioTranscribeClick: ((ChatMessage) -> Unit)? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var playingMessageTs: Long? = null
+    private var showTranscriptionOption: Boolean = false
 
     companion object {
         private const val VIEW_USER = 1
@@ -31,6 +33,7 @@ class ChatAdapter(
         private const val VIEW_TYPING = 3
         private const val VIEW_HTML = 4
         private const val VIEW_IMAGE_USER = 5
+        private const val VIEW_AUDIO = 6
     }
 
     class MessageVH(view: View) : RecyclerView.ViewHolder(view) {
@@ -57,12 +60,19 @@ class ChatAdapter(
         val videoBadge: TextView = view.findViewById(R.id.videoBadge)
     }
 
+    class AudioVH(view: View) : RecyclerView.ViewHolder(view) {
+        val play: TextView = view.findViewById(R.id.audioPlayButton)
+        val transcribe: TextView = view.findViewById(R.id.audioTranscribeButton)
+    }
+
     override fun getItemViewType(position: Int): Int {
         val item = items[position]
         val hasHtml = Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(item.text)
+        val hasAudio = !item.audioPath.isNullOrBlank() || !item.audioUrl.isNullOrBlank() || !item.ttsText.isNullOrBlank()
         return when {
             item.role == "typing" -> VIEW_TYPING
             item.role == "user" && (!item.imagePath.isNullOrBlank() || !item.videoPath.isNullOrBlank()) -> VIEW_IMAGE_USER
+            hasAudio -> VIEW_AUDIO
             item.role == "user" -> VIEW_USER
             hasHtml -> VIEW_HTML
             else -> VIEW_BOT
@@ -76,6 +86,7 @@ class ChatAdapter(
             VIEW_TYPING -> TypingVH(inflater.inflate(R.layout.item_message_typing, parent, false))
             VIEW_HTML -> HtmlVH(inflater.inflate(R.layout.item_message_html, parent, false))
             VIEW_IMAGE_USER -> ImageUserVH(inflater.inflate(R.layout.item_message_image_user, parent, false))
+            VIEW_AUDIO -> AudioVH(inflater.inflate(R.layout.item_message_audio, parent, false))
             else -> MessageVH(inflater.inflate(R.layout.item_message_bot, parent, false))
         }
     }
@@ -158,6 +169,19 @@ class ChatAdapter(
                 holder.caption.text = item.text
                 holder.itemView.setOnClickListener { onMessageClick?.invoke(item) }
             }
+            is AudioVH -> {
+                val item = items[position]
+                val icon = if (playingMessageTs == item.ts) "⏸" else "▶"
+                holder.play.text = "$icon ${item.text}"
+                holder.play.setBackgroundResource(theme.botBubble)
+                holder.play.setTextColor(theme.botText)
+                holder.play.setOnClickListener { onMessageClick?.invoke(item) }
+
+                holder.transcribe.setBackgroundResource(theme.botBubble)
+                holder.transcribe.setTextColor(theme.botText)
+                holder.transcribe.visibility = if (showTranscriptionOption) View.VISIBLE else View.GONE
+                holder.transcribe.setOnClickListener { onAudioTranscribeClick?.invoke(item) }
+            }
             is TypingVH -> {
                 val bubble = holder.itemView.findViewById<View>(R.id.typingBubble)
                 bubble?.setBackgroundResource(theme.botBubble)
@@ -206,6 +230,11 @@ class ChatAdapter(
 
     fun setPlayingMessage(ts: Long?) {
         playingMessageTs = ts
+        notifyDataSetChanged()
+    }
+
+    fun setShowTranscriptionOption(enabled: Boolean) {
+        showTranscriptionOption = enabled
         notifyDataSetChanged()
     }
 }
