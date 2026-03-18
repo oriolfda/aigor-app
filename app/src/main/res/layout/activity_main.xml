@@ -2,20 +2,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0B1020"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:paddingHorizontal="12dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="AIGOR Chat"
-            android:textSize="22sp"
+            android:textColor="#F9FAFB"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <Button
@@ -30,7 +34,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp" />
+        android:clipToPadding="false"
+        android:paddingHorizontal="10dp"
+        android:paddingBottom="6dp" />
 
     <TextView
         android:id="@+id/statusText"
@@ -39,7 +45,7 @@
         android:paddingHorizontal="12dp"
         android:paddingBottom="6dp"
         android:text="Estat: llest"
-        android:textColor="#6B7280" />
+        android:textColor="#9CA3AF" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,9 +58,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="#111827"
             android:hint="Escriu un missatge..."
+            android:textColorHint="#6B7280"
             android:inputType="textMultiLine|textCapSentences"
-            android:maxLines="4" />
+            android:maxLines="4"
+            android:padding="12dp"
+            android:textColor="#F9FAFB" />
 
         <Button
             android:id="@+id/sendButton"

@@ -105,8 +105,8 @@ class MainActivity : AppCompatActivity() {
                 val urls = extractUrls(message)
                 val payloadText = if (urls.isEmpty()) message else "$message\n\nURLs detectades: ${urls.joinToString(", ")}" 
                 val payload = JSONObject().apply {
-                    put("text", payloadText)
-                    put("mode", "now")
+                    put("message", payloadText)
+                    put("sessionId", "aigor-app-chat")
                 }
 
                 val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
@@ -150,10 +150,11 @@ class MainActivity : AppCompatActivity() {
         return try {
             val obj = JSONObject(body)
             when {
+                obj.has("reply") -> obj.optString("reply")
                 obj.has("response") -> obj.optString("response")
                 obj.has("message") -> obj.optString("message")
                 obj.has("text") -> obj.optString("text")
-                obj.has("ok") -> "Enviat OK. (ACK tècnic: ${obj.optBoolean("ok")})"
+                obj.has("ok") -> "Missatge enviat ✅"
                 else -> body
             }
         } catch (_: Exception) {

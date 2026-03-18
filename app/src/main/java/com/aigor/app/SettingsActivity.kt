@@ -18,7 +18,7 @@ class SettingsActivity : AppCompatActivity() {
         val statusText: TextView = findViewById(R.id.settingsStatusText)
 
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
-        endpointEdit.setText(prefs.getString("openclaw_endpoint", "http://192.168.0.102:18789/hooks/wake"))
+        endpointEdit.setText(prefs.getString("openclaw_endpoint", "http://192.168.0.102:8092/chat"))
         tokenEdit.setText(prefs.getString("openclaw_hook_token", ""))
 
         saveButton.setOnClickListener {
