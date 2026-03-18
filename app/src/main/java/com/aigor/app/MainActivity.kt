@@ -62,11 +62,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cancelAttachmentButton: Button
     private lateinit var micButton: ImageButton
     private lateinit var recordingControlsRow: LinearLayout
-    private lateinit var recordDeleteButton: Button
-    private lateinit var recordPauseButton: Button
-    private lateinit var recordSendButton: Button
+    private lateinit var recordDeleteButton: ImageButton
+    private lateinit var recordPauseButton: ImageButton
+    private lateinit var recordSendButton: ImageButton
     private lateinit var recordTimerText: TextView
-    private lateinit var recordHintText: TextView
+    private lateinit var recordDotsText: TextView
 
     private lateinit var adapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         recordPauseButton = findViewById(R.id.recordPauseButton)
         recordSendButton = findViewById(R.id.recordSendButton)
         recordTimerText = findViewById(R.id.recordTimerText)
-        recordHintText = findViewById(R.id.recordHintText)
+        recordDotsText = findViewById(R.id.recordDotsText)
 
         val theme = currentTheme()
         adapter = ChatAdapter(messages, theme)
@@ -474,12 +474,12 @@ class MainActivity : AppCompatActivity() {
             if (!isRecordingPaused) {
                 rec.pause()
                 isRecordingPaused = true
-                recordPauseButton.text = "▶"
+                recordPauseButton.setImageResource(R.drawable.ic_play_min)
                 statusText.text = "Gravació en pausa"
             } else {
                 rec.resume()
                 isRecordingPaused = false
-                recordPauseButton.text = "⏸"
+                recordPauseButton.setImageResource(R.drawable.ic_pause_min)
                 statusText.text = "🎙 Gravant..."
             }
         } catch (_: Exception) {
@@ -533,8 +533,8 @@ class MainActivity : AppCompatActivity() {
         isRecording = false
         isRecordingPaused = false
         isRecordingLocked = false
-        recordPauseButton.text = "⏸"
-        recordTimerText.text = "00:00"
+        recordPauseButton.setImageResource(R.drawable.ic_pause_min)
+        recordTimerText.text = "0:00"
         recordingControlsRow.visibility = View.GONE
         recordingHandler.removeCallbacksAndMessages(null)
     }
@@ -557,11 +557,11 @@ class MainActivity : AppCompatActivity() {
         attachButton.setTextColor(theme.menuDotsColor)
         micButton.setColorFilter(0xFF07130B.toInt())
         sendButton.setColorFilter(theme.sendText)
-        recordDeleteButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
-        recordPauseButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
-        recordSendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
+        recordDeleteButton.setColorFilter(theme.statusColor)
+        recordPauseButton.setColorFilter(0xFFFF4D67.toInt())
+        recordSendButton.setColorFilter(0xFF04130A.toInt())
         recordTimerText.setTextColor(theme.statusColor)
-        recordHintText.setTextColor(theme.statusColor)
+        recordDotsText.setTextColor(theme.statusColor)
     }
 
     private fun extractUrls(text: String): List<String> {
