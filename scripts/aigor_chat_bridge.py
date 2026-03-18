@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+import base64
 import json
 import os
+import shutil
 import subprocess
+import tempfile
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HOST = os.environ.get("AIGOR_BRIDGE_HOST", "0.0.0.0")
@@ -56,6 +60,64 @@ def run_openclaw_json(cmd, timeout=180):
     out = (proc.stdout or "") + (proc.stderr or "")
     parsed = extract_json_block(out)
     return proc.returncode, parsed, out
+
+
+def safe_name(name: str) -> str:
+    return "".join(c for c in name if c.isalnum() or c in ("-", "_", "."))[:120] or "attachment"
+
+
+def process_attachment(att: dict):
+    """Decode attachment and return (prompt_suffix, temp_paths[])"""
+    name = safe_name((att.get("name") or "attachment"))
+    mime = (att.get("mime") or "application/octet-stream").lower()
+    data_b64 = att.get("dataBase64") or ""
+    if not data_b64:
+        return "", []
+
+    raw = base64.b64decode(data_b64)
+    ext = name.split(".")[-1] if "." in name else "bin"
+    base = os.path.join(tempfile.gettempdir(), f"aigor-{uuid.uuid4().hex}")
+    path = f"{base}.{ext}"
+    with open(path, "wb") as f:
+        f.write(raw)
+
+    hints = [f"Adjunt rebut: {name} ({mime}), mida {len(raw)} bytes."]
+    temp_paths = [path]
+
+    if mime.startswith("image/"):
+        hints.append(f"Analitza aquesta imatge local: {path}")
+
+    elif mime.startswith("audio/"):
+        stt_py = "/home/oriol/.openclaw/workspace/scripts/stt_aina_ca.py"
+        stt_runner = "/home/oriol/.openclaw/venvs/aina-stt/bin/python"
+        if os.path.exists(stt_py) and os.path.exists(stt_runner):
+            try:
+                tr = subprocess.run([stt_runner, stt_py, path], capture_output=True, text=True, timeout=180)
+                transcript = (tr.stdout or "").strip()
+                if transcript:
+                    hints.append(f"Transcripció àudio: {transcript}")
+                else:
+                    hints.append("No s'ha pogut transcriure l'àudio.")
+            except Exception as e:
+                hints.append(f"Error transcripció àudio: {e}")
+
+    elif mime.startswith("video/"):
+        ffmpeg = shutil.which("ffmpeg")
+        frame = f"{base}-frame.jpg"
+        if ffmpeg:
+            try:
+                subprocess.run([ffmpeg, "-y", "-i", path, "-vf", "select=eq(n\\,0)", "-q:v", "2", "-frames:v", "1", frame], capture_output=True, text=True, timeout=180)
+                if os.path.exists(frame):
+                    hints.append(f"Vídeo adjunt. Fotograma inicial: {frame}. Analitza'l.")
+                    temp_paths.append(frame)
+                else:
+                    hints.append("Vídeo adjunt; no s'ha pogut extreure fotograma.")
+            except Exception as e:
+                hints.append(f"Vídeo adjunt; error extraient fotograma: {e}")
+        else:
+            hints.append("Vídeo adjunt; ffmpeg no disponible per previsualització.")
+
+    return "\n".join(hints), temp_paths
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -164,36 +226,58 @@ class Handler(BaseHTTPRequestHandler):
 
         message = (data.get("message") or "").strip()
         session_id = (data.get("sessionId") or DEFAULT_SESSION).strip() or DEFAULT_SESSION
-        if not message:
-            self._send(400, {"ok": False, "error": "message required"})
+        attachment = data.get("attachment") if isinstance(data.get("attachment"), dict) else None
+        if not message and not attachment:
+            self._send(400, {"ok": False, "error": "message or attachment required"})
             return
 
-        cmd = [
-            "openclaw", "agent",
-            "--session-id", session_id,
-            "--message", message,
-            "--json",
-        ]
-
+        temp_paths = []
         try:
-            rc, parsed, out = run_openclaw_json(cmd, timeout=180)
+            extra_prompt = ""
+            if attachment:
+                extra_prompt, temp_paths = process_attachment(attachment)
+
+            final_message = message or "Analitza l'adjunt."
+            if extra_prompt:
+                final_message = f"{final_message}\n\n{extra_prompt}"
+
+            cmd = [
+                "openclaw", "agent",
+                "--session-id", session_id,
+                "--message", final_message,
+                "--json",
+            ]
+
+            rc, parsed, out = run_openclaw_json(cmd, timeout=240)
             if rc != 0 or not parsed:
                 self._send(500, {"ok": False, "error": "agent_failed", "details": out[-600:]})
                 return
 
             reply = ""
+            media_url = None
             payloads = (((parsed.get("result") or {}).get("payloads")) or [])
             if payloads and isinstance(payloads, list):
                 first = payloads[0] or {}
                 reply = (first.get("text") or "").strip()
+                media_url = first.get("mediaUrl")
             if not reply:
                 reply = "(Sense resposta textual)"
 
-            self._send(200, {"ok": True, "reply": reply, "sessionId": session_id})
+            payload = {"ok": True, "reply": reply, "sessionId": session_id}
+            if media_url:
+                payload["mediaUrl"] = media_url
+            self._send(200, payload)
         except subprocess.TimeoutExpired:
             self._send(504, {"ok": False, "error": "timeout"})
         except Exception as e:
             self._send(500, {"ok": False, "error": str(e)})
+        finally:
+            for p in temp_paths:
+                try:
+                    if p and os.path.exists(p):
+                        os.remove(p)
+                except Exception:
+                    pass
 
 
 def main():

@@ -28,6 +28,25 @@ object ThemeManager {
 
     val themes = listOf(
         UiTheme(
+            id = "html_match",
+            label = "HTML Match",
+            screenBg = 0xFF0B1018.toInt(),
+            titleColor = 0xFFF3F4F6.toInt(),
+            statusColor = 0xFF7C879A.toInt(),
+            messageTextColor = 0xFFF9FAFB.toInt(),
+            messageHintColor = 0xFF7C879A.toInt(),
+            menuDotsColor = 0xFFE5E7EB.toInt(),
+            menuTint = 0x00000000,
+            sendTint = 0xFFFF5C5C.toInt(),
+            sendText = 0xFFFFFFFF.toInt(),
+            userText = 0xFFF9FAFB.toInt(),
+            botText = 0xFFF9FAFB.toInt(),
+            typingDots = 0xFFD1D5DB.toInt(),
+            userBubble = R.drawable.bg_chat_user_ember,
+            botBubble = R.drawable.bg_chat_bot_ember,
+            inputBg = R.drawable.bg_input_chat,
+        ),
+        UiTheme(
             id = "ember_dark",
             label = "Fosc vermell",
             screenBg = 0xFF0B1018.toInt(),

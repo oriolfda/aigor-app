@@ -1,13 +1,17 @@
 package com.aigor.app
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
+import android.util.Base64
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,15 +26,27 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
+    data class AttachmentData(
+        val name: String,
+        val mime: String,
+        val base64: String,
+    )
+
     private lateinit var rootLayout: View
     private lateinit var titleText: TextView
     private lateinit var overflowMenuButton: ImageButton
+    private lateinit var attachButton: Button
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
     private lateinit var chatRecycler: RecyclerView
     private lateinit var sendButton: Button
     private lateinit var adapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
+    private var pendingAttachment: AttachmentData? = null
+
+    private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) handlePickedMedia(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout = findViewById(R.id.rootLayout)
         titleText = findViewById(R.id.titleText)
         overflowMenuButton = findViewById(R.id.overflowMenuButton)
+        attachButton = findViewById(R.id.attachButton)
         messageEdit = findViewById(R.id.messageEdit)
         statusText = findViewById(R.id.statusText)
         chatRecycler = findViewById(R.id.chatRecycler)
@@ -79,6 +96,10 @@ class MainActivity : AppCompatActivity() {
             popup.show()
         }
 
+        attachButton.setOnClickListener {
+            pickMediaLauncher.launch("*/*")
+        }
+
         sendButton.setOnClickListener {
             val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
             val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
@@ -93,14 +114,24 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = "Estat: falta token (Settings)"
                 return@setOnClickListener
             }
-            if (message.isBlank()) {
+            if (message.isBlank() && pendingAttachment == null) {
                 return@setOnClickListener
             }
 
-            addMessage(ChatMessage("user", message))
+            val previewText = buildString {
+                if (message.isNotBlank()) append(message)
+                pendingAttachment?.let {
+                    if (isNotBlank()) append("\n")
+                    append("📎 ${it.name}")
+                }
+            }
+
+            addMessage(ChatMessage("user", previewText.ifBlank { "(adjunt)" }))
             messageEdit.setText("")
             addMessage(ChatMessage("typing", ""))
-            sendToOpenClaw(endpoint, token, message)
+            sendToOpenClaw(endpoint, token, message, pendingAttachment)
+            pendingAttachment = null
+            attachButton.text = "+"
         }
     }
 
@@ -128,9 +159,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun handlePickedMedia(uri: Uri) {
+        try {
+            val mime = contentResolver.getType(uri).orEmpty()
+            if (!(mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/"))) {
+                statusText.text = "Només imatge, vídeo o àudio"
+                return
+            }
+
+            val name = queryName(uri) ?: "adjunt"
+            val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: run {
+                statusText.text = "No s'ha pogut llegir el fitxer"
+                return
+            }
+            if (bytes.size > 12 * 1024 * 1024) {
+                statusText.text = "Fitxer massa gran (>12MB)"
+                return
+            }
+
+            val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            pendingAttachment = AttachmentData(name = name, mime = mime, base64 = b64)
+            attachButton.text = "📎"
+            statusText.text = "Adjunt preparat: $name"
+        } catch (e: Exception) {
+            statusText.text = "Error adjunt: ${e.message}"
+        }
+    }
+
+    private fun queryName(uri: Uri): String? {
+        return contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+        }
+    }
+
     private fun currentTheme(): ThemeManager.UiTheme {
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
-        return ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "ember_dark"))
+        return ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "html_match"))
     }
 
     private fun applyTheme(theme: ThemeManager.UiTheme) {
@@ -154,7 +219,7 @@ class MainActivity : AppCompatActivity() {
         return urls.distinct()
     }
 
-    private fun sendToOpenClaw(endpoint: String, token: String, message: String) {
+    private fun sendToOpenClaw(endpoint: String, token: String, message: String, attachment: AttachmentData?) {
         statusText.text = "Estat: enviant..."
 
         thread {
@@ -164,6 +229,13 @@ class MainActivity : AppCompatActivity() {
                 val payload = JSONObject().apply {
                     put("message", payloadText)
                     put("sessionId", "aigor-app-chat")
+                    attachment?.let {
+                        put("attachment", JSONObject().apply {
+                            put("name", it.name)
+                            put("mime", it.mime)
+                            put("dataBase64", it.base64)
+                        })
+                    }
                 }
 
                 val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {

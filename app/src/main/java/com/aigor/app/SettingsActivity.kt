@@ -30,7 +30,7 @@ class SettingsActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         themeSpinner.adapter = adapter
 
-        val currentThemeId = prefs.getString(ThemeManager.PREF_KEY, "ember_dark")
+        val currentThemeId = prefs.getString(ThemeManager.PREF_KEY, "html_match")
         val selectedIndex = themes.indexOfFirst { it.id == currentThemeId }.coerceAtLeast(0)
         themeSpinner.setSelection(selectedIndex)
 
