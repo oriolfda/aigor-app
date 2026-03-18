@@ -204,6 +204,10 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        messageEdit.setOnFocusChangeListener { _, hasFocus ->
+            messageInputContainer.isSelected = hasFocus
+        }
+
         topToolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_status -> {
