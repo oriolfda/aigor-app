@@ -97,6 +97,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/composerRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="bottom"
@@ -132,6 +133,53 @@
                 android:backgroundTint="#FF5C5C"
                 android:text="Send"
                 android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/micButton"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#22C55E"
+                android:text="🎤"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/recordingControlsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/recordDeleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🗑" />
+
+            <Button
+                android:id="@+id/recordPauseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="⏸" />
+
+            <TextView
+                android:id="@+id/recordTimerText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="00:00"
+                android:textColor="#E5E7EB" />
+
+            <Button
+                android:id="@+id/recordSendButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enviar" />
         </LinearLayout>
     </LinearLayout>
 

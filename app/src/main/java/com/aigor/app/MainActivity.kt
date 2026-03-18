@@ -1,14 +1,20 @@
 package com.aigor.app
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Base64
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -25,6 +31,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -51,9 +58,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingAttachmentPreview: ImageView
     private lateinit var pendingAttachmentText: TextView
     private lateinit var cancelAttachmentButton: Button
+    private lateinit var micButton: Button
+    private lateinit var recordingControlsRow: LinearLayout
+    private lateinit var recordDeleteButton: Button
+    private lateinit var recordPauseButton: Button
+    private lateinit var recordSendButton: Button
+    private lateinit var recordTimerText: TextView
+
     private lateinit var adapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
     private var pendingAttachment: AttachmentData? = null
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var currentRecordingFile: File? = null
+    private var isRecording = false
+    private var isRecordingPaused = false
+    private var isRecordingLocked = false
+    private var micStartY = 0f
+    private var recordingStartMs = 0L
+    private val recordingHandler = Handler(Looper.getMainLooper())
 
     private val pickMediaLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) handlePickedMedia(uri)
@@ -78,6 +101,14 @@ class MainActivity : AppCompatActivity() {
         if (uri != null) handlePickedMedia(uri)
     }
 
+    private val requestAudioPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            startPressRecording()
+        } else {
+            statusText.text = "Cal permís de micròfon"
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -94,6 +125,12 @@ class MainActivity : AppCompatActivity() {
         pendingAttachmentPreview = findViewById(R.id.pendingAttachmentPreview)
         pendingAttachmentText = findViewById(R.id.pendingAttachmentText)
         cancelAttachmentButton = findViewById(R.id.cancelAttachmentButton)
+        micButton = findViewById(R.id.micButton)
+        recordingControlsRow = findViewById(R.id.recordingControlsRow)
+        recordDeleteButton = findViewById(R.id.recordDeleteButton)
+        recordPauseButton = findViewById(R.id.recordPauseButton)
+        recordSendButton = findViewById(R.id.recordSendButton)
+        recordTimerText = findViewById(R.id.recordTimerText)
 
         val theme = currentTheme()
         adapter = ChatAdapter(messages, theme)
@@ -173,6 +210,45 @@ class MainActivity : AppCompatActivity() {
             statusText.text = "Adjunt eliminat"
         }
 
+        micButton.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    micStartY = event.rawY
+                    ensureAudioPermissionAndStart()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isRecording && !isRecordingLocked) {
+                        val deltaUp = micStartY - event.rawY
+                        if (deltaUp > 140f) {
+                            isRecordingLocked = true
+                            statusText.text = "Enregistrament bloquejat"
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (isRecording && !isRecordingLocked) {
+                        stopRecordingAndAttach(sendNow = true)
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
+        recordDeleteButton.setOnClickListener {
+            cancelRecording()
+        }
+
+        recordPauseButton.setOnClickListener {
+            togglePauseRecording()
+        }
+
+        recordSendButton.setOnClickListener {
+            if (isRecording) stopRecordingAndAttach(sendNow = true)
+        }
+
         sendButton.setOnClickListener {
             val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
             val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
@@ -213,6 +289,15 @@ class MainActivity : AppCompatActivity() {
         val theme = currentTheme()
         applyTheme(theme)
         adapter.setTheme(theme)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isRecording) {
+            cancelRecording()
+        } else {
+            cleanupRecorderState()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -301,6 +386,128 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun ensureAudioPermissionAndStart() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startPressRecording()
+        } else {
+            requestAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun startPressRecording() {
+        if (isRecording) return
+        try {
+            val file = File(cacheDir, "voice-${System.currentTimeMillis()}.m4a")
+            val rec = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128000)
+                setAudioSamplingRate(44100)
+                setOutputFile(file.absolutePath)
+                prepare()
+                start()
+            }
+            mediaRecorder = rec
+            currentRecordingFile = file
+            isRecording = true
+            isRecordingPaused = false
+            isRecordingLocked = false
+            recordingStartMs = System.currentTimeMillis()
+            recordingControlsRow.visibility = View.VISIBLE
+            statusText.text = "🎙 Gravant... llisca amunt per bloquejar"
+            startRecordingTicker()
+        } catch (e: Exception) {
+            statusText.text = "No s'ha pogut iniciar la gravació: ${e.message}"
+            cleanupRecorderState()
+        }
+    }
+
+    private fun startRecordingTicker() {
+        recordingHandler.removeCallbacksAndMessages(null)
+        recordingHandler.post(object : Runnable {
+            override fun run() {
+                if (!isRecording) return
+                val elapsed = ((System.currentTimeMillis() - recordingStartMs) / 1000).toInt().coerceAtLeast(0)
+                val mm = elapsed / 60
+                val ss = elapsed % 60
+                recordTimerText.text = String.format("%02d:%02d", mm, ss)
+                recordingHandler.postDelayed(this, 500)
+            }
+        })
+    }
+
+    private fun togglePauseRecording() {
+        val rec = mediaRecorder ?: return
+        try {
+            if (!isRecordingPaused) {
+                rec.pause()
+                isRecordingPaused = true
+                recordPauseButton.text = "▶"
+                statusText.text = "Gravació en pausa"
+            } else {
+                rec.resume()
+                isRecordingPaused = false
+                recordPauseButton.text = "⏸"
+                statusText.text = "🎙 Gravant..."
+            }
+        } catch (_: Exception) {
+            // Some devices may not support pause/resume reliably.
+        }
+    }
+
+    private fun cancelRecording() {
+        try {
+            mediaRecorder?.stop()
+        } catch (_: Exception) {
+        }
+        currentRecordingFile?.delete()
+        cleanupRecorderState()
+        statusText.text = "Gravació descartada"
+    }
+
+    private fun stopRecordingAndAttach(sendNow: Boolean) {
+        val file = currentRecordingFile
+        try {
+            mediaRecorder?.stop()
+        } catch (_: Exception) {
+        }
+        cleanupRecorderState()
+
+        if (file == null || !file.exists()) {
+            statusText.text = "No s'ha pogut desar l'àudio"
+            return
+        }
+
+        val bytes = file.readBytes()
+        pendingAttachment = AttachmentData(
+            name = "voice-${System.currentTimeMillis()}.m4a",
+            mime = "audio/mp4",
+            base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+        )
+        updatePendingAttachmentUi()
+        statusText.text = "Àudio preparat"
+
+        if (sendNow) {
+            sendButton.performClick()
+        }
+
+        file.delete()
+    }
+
+    private fun cleanupRecorderState() {
+        try { mediaRecorder?.release() } catch (_: Exception) {}
+        mediaRecorder = null
+        currentRecordingFile = null
+        isRecording = false
+        isRecordingPaused = false
+        isRecordingLocked = false
+        recordPauseButton.text = "⏸"
+        recordTimerText.text = "00:00"
+        recordingControlsRow.visibility = View.GONE
+        recordingHandler.removeCallbacksAndMessages(null)
+    }
+
     private fun currentTheme(): ThemeManager.UiTheme {
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
         return ThemeManager.byId(prefs.getString(ThemeManager.PREF_KEY, "html_match"))
@@ -317,8 +524,14 @@ class MainActivity : AppCompatActivity() {
         messageEdit.setBackgroundResource(theme.inputBg)
         attachButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
         attachButton.setTextColor(theme.menuDotsColor)
+        micButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF22C55E.toInt())
+        micButton.setTextColor(0xFF04130A.toInt())
         sendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
         sendButton.setTextColor(theme.sendText)
+        recordDeleteButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
+        recordPauseButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
+        recordSendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
+        recordTimerText.setTextColor(theme.statusColor)
     }
 
     private fun extractUrls(text: String): List<String> {
