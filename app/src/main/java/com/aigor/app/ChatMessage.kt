@@ -7,4 +7,5 @@ data class ChatMessage(
     val audioPath: String? = null,
     val audioUrl: String? = null,
     val ttsText: String? = null,
+    val imagePath: String? = null,
 )

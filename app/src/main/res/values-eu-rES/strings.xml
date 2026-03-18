@@ -92,4 +92,5 @@
 • Erabilia: %2$s / %3$s token (%4$s%%)
 • Libre: %5$s token (%6$s%%)</string>
     <string name="copied">Kopiatuta</string>
+    <string name="image_preview_title">Irudi aurrebista</string>
 </resources>

@@ -163,6 +163,9 @@ class MainActivity : AppCompatActivity() {
                 !msg.audioPath.isNullOrBlank() || !msg.audioUrl.isNullOrBlank() || !msg.ttsText.isNullOrBlank() -> {
                     toggleAudioPlayback(msg)
                 }
+                !msg.imagePath.isNullOrBlank() -> {
+                    showImagePreview(msg.imagePath)
+                }
                 Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(msg.text) -> {
                     showHtmlPreview(msg.text)
                 }
@@ -310,6 +313,7 @@ class MainActivity : AppCompatActivity() {
 
             val attachmentToSend = pendingAttachment
             var sentAudioPath: String? = null
+            var sentImagePath: String? = null
             if (attachmentToSend?.mime?.startsWith("audio/") == true) {
                 try {
                     val bytes = Base64.decode(attachmentToSend.base64, Base64.DEFAULT)
@@ -324,9 +328,24 @@ class MainActivity : AppCompatActivity() {
                     playLastAudioButton.visibility = View.VISIBLE
                 } catch (_: Exception) {
                 }
+            } else if (attachmentToSend?.mime?.startsWith("image/") == true) {
+                try {
+                    val bytes = Base64.decode(attachmentToSend.base64, Base64.DEFAULT)
+                    val f = File(cacheDir, "sent-image-${System.currentTimeMillis()}.jpg")
+                    f.writeBytes(bytes)
+                    sentImagePath = f.absolutePath
+                } catch (_: Exception) {
+                }
             }
 
-            addMessage(ChatMessage("user", previewText.ifBlank { getString(R.string.attachment_placeholder) }, audioPath = sentAudioPath))
+            addMessage(
+                ChatMessage(
+                    "user",
+                    previewText.ifBlank { getString(R.string.attachment_placeholder) },
+                    audioPath = sentAudioPath,
+                    imagePath = sentImagePath,
+                )
+            )
             messageEdit.setText("")
             addMessage(ChatMessage("typing", ""))
 
@@ -903,6 +922,21 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun showImagePreview(path: String?) {
+        if (path.isNullOrBlank()) return
+        val f = File(path)
+        if (!f.exists()) return
+        val image = ImageView(this)
+        image.setImageBitmap(BitmapFactory.decodeFile(path))
+        image.adjustViewBounds = true
+        image.scaleType = ImageView.ScaleType.FIT_CENTER
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.image_preview_title))
+            .setView(image)
+            .setPositiveButton(getString(R.string.close), null)
+            .show()
+    }
+
     private fun showHtmlPreview(html: String) {
         val webView = WebView(this)
         val ws: WebSettings = webView.settings
@@ -974,6 +1008,7 @@ class MainActivity : AppCompatActivity() {
                             audioPath = o.optString("audioPath", "").ifBlank { null },
                             audioUrl = o.optString("audioUrl", "").ifBlank { null },
                             ttsText = o.optString("ttsText", "").ifBlank { null },
+                            imagePath = o.optString("imagePath", "").ifBlank { null },
                         )
                     )
                 }
@@ -994,6 +1029,7 @@ class MainActivity : AppCompatActivity() {
                 put("audioPath", it.audioPath ?: "")
                 put("audioUrl", it.audioUrl ?: "")
                 put("ttsText", it.ttsText ?: "")
+                put("imagePath", it.imagePath ?: "")
             })
         }
         getSharedPreferences("aigor_prefs", MODE_PRIVATE)

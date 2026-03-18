@@ -3,6 +3,7 @@ package com.aigor.app
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +29,7 @@ class ChatAdapter(
         private const val VIEW_BOT = 2
         private const val VIEW_TYPING = 3
         private const val VIEW_HTML = 4
+        private const val VIEW_IMAGE_USER = 5
     }
 
     class MessageVH(view: View) : RecyclerView.ViewHolder(view) {
@@ -44,12 +47,18 @@ class ChatAdapter(
         val label: TextView = view.findViewById(R.id.htmlLabel)
     }
 
+    class ImageUserVH(view: View) : RecyclerView.ViewHolder(view) {
+        val image: ImageView = view.findViewById(R.id.messageImage)
+        val caption: TextView = view.findViewById(R.id.messageCaption)
+    }
+
     override fun getItemViewType(position: Int): Int {
         val item = items[position]
         val hasHtml = Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(item.text)
         return when {
-            item.role == "user" -> VIEW_USER
             item.role == "typing" -> VIEW_TYPING
+            item.role == "user" && !item.imagePath.isNullOrBlank() -> VIEW_IMAGE_USER
+            item.role == "user" -> VIEW_USER
             hasHtml -> VIEW_HTML
             else -> VIEW_BOT
         }
@@ -61,6 +70,7 @@ class ChatAdapter(
             VIEW_USER -> MessageVH(inflater.inflate(R.layout.item_message_user, parent, false))
             VIEW_TYPING -> TypingVH(inflater.inflate(R.layout.item_message_typing, parent, false))
             VIEW_HTML -> HtmlVH(inflater.inflate(R.layout.item_message_html, parent, false))
+            VIEW_IMAGE_USER -> ImageUserVH(inflater.inflate(R.layout.item_message_image_user, parent, false))
             else -> MessageVH(inflater.inflate(R.layout.item_message_bot, parent, false))
         }
     }
@@ -111,6 +121,16 @@ class ChatAdapter(
                     null
                 )
                 holder.web.setOnClickListener { onMessageClick?.invoke(item) }
+                holder.itemView.setOnClickListener { onMessageClick?.invoke(item) }
+            }
+            is ImageUserVH -> {
+                val item = items[position]
+                val path = item.imagePath
+                if (!path.isNullOrBlank()) {
+                    val bmp = BitmapFactory.decodeFile(path)
+                    if (bmp != null) holder.image.setImageBitmap(bmp)
+                }
+                holder.caption.text = item.text
                 holder.itemView.setOnClickListener { onMessageClick?.invoke(item) }
             }
             is TypingVH -> {

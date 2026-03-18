@@ -92,4 +92,5 @@
 • Ocupado: %2$s / %3$s tokens (%4$s%%)
 • Libre: %5$s tokens (%6$s%%)</string>
     <string name="copied">Copiado</string>
+    <string name="image_preview_title">Vista previa imagen</string>
 </resources>
