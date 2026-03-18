@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -38,10 +39,11 @@ import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     data class AttachmentData(
         val name: String,
@@ -78,6 +80,8 @@ class MainActivity : AppCompatActivity() {
     private val sentAudioFiles = mutableListOf<File>()
     private var lastSentAudioFile: File? = null
     private var mediaPlayer: MediaPlayer? = null
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
 
     private var mediaRecorder: MediaRecorder? = null
     private var currentRecordingFile: File? = null
@@ -155,8 +159,10 @@ class MainActivity : AppCompatActivity() {
                     if (f.exists()) playLocalAudio(f) else statusText.text = "Àudio local no trobat"
                 }
                 !msg.audioUrl.isNullOrBlank() -> tryPlayRemoteAudio(msg.audioUrl)
+                !msg.ttsText.isNullOrBlank() -> speakTts(msg.ttsText)
             }
         }
+        tts = TextToSpeech(this, this)
         chatRecycler.layoutManager = LinearLayoutManager(this)
         chatRecycler.adapter = adapter
         applyTheme(theme)
@@ -346,6 +352,9 @@ class MainActivity : AppCompatActivity() {
         }
         try { mediaPlayer?.release() } catch (_: Exception) {}
         mediaPlayer = null
+        try { tts?.stop(); tts?.shutdown() } catch (_: Exception) {}
+        tts = null
+        ttsReady = false
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -685,18 +694,23 @@ class MainActivity : AppCompatActivity() {
                 } catch (_: Exception) { "" }
 
                 runOnUiThread {
-                    val assistantText = parseAssistantText(body, code)
+                    val assistantTextRaw = parseAssistantText(body, code)
                     val mediaUrl = try {
                         JSONObject(body).optString("mediaUrl", "")
                     } catch (_: Exception) { "" }
+                    val (assistantText, ttsText) = extractTtsBlock(assistantTextRaw)
 
                     // Replace typing bubble with textual assistant response.
-                    adapter.replaceLast(ChatMessage("assistant", assistantText))
+                    adapter.replaceLast(ChatMessage("assistant", assistantText, ttsText = ttsText))
 
-                    // If response includes audio, append it as its own playable chat message.
+                    // If response includes remote audio, append dedicated playable message.
                     if (mediaUrl.isNotBlank()) {
                         addMessage(ChatMessage("assistant", "Àudio de resposta", audioUrl = mediaUrl))
                         tryPlayRemoteAudio(mediaUrl)
+                    } else if (!ttsText.isNullOrBlank()) {
+                        // Fallback: TTS block received as text markup -> expose as playable message.
+                        addMessage(ChatMessage("assistant", "Àudio de resposta (TTS)", ttsText = ttsText))
+                        speakTts(ttsText)
                     }
 
                     statusText.text = if (code in 200..299) "Estat: enviat OK ($code)" else "Estat: error HTTP $code"
@@ -799,6 +813,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun extractTtsBlock(text: String): Pair<String, String?> {
+        val inline = Regex("\\[\\[tts:(.+?)\\]\\]", RegexOption.DOT_MATCHES_ALL).find(text)
+        if (inline != null) {
+            val ttsText = inline.groupValues[1].trim()
+            val cleaned = text.replace(inline.value, "").trim().ifBlank { "Resposta de text rebuda." }
+            return cleaned to ttsText
+        }
+
+        val block = Regex("\\[\\[tts:text\\]\\](.+?)\\[\\[/tts:text\\]\\]", RegexOption.DOT_MATCHES_ALL).find(text)
+        if (block != null) {
+            val ttsText = block.groupValues[1].trim()
+            val cleaned = text.replace(block.value, "").trim().ifBlank { "Resposta de text rebuda." }
+            return cleaned to ttsText
+        }
+
+        return text to null
+    }
+
+    override fun onInit(status: Int) {
+        ttsReady = status == TextToSpeech.SUCCESS
+        if (ttsReady) {
+            tts?.language = Locale("ca", "ES")
+        }
+    }
+
+    private fun speakTts(text: String?) {
+        if (text.isNullOrBlank()) return
+        if (!ttsReady) {
+            statusText.text = "TTS no disponible al dispositiu"
+            return
+        }
+        try {
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "aigor-tts")
+        } catch (_: Exception) {
+        }
+    }
+
     private fun showAboutDialog() {
         val pkg = packageManager.getPackageInfo(packageName, 0)
         val versionName = pkg.versionName ?: "?"
@@ -846,6 +897,7 @@ class MainActivity : AppCompatActivity() {
                             ts = o.optLong("ts", 0L),
                             audioPath = o.optString("audioPath", "").ifBlank { null },
                             audioUrl = o.optString("audioUrl", "").ifBlank { null },
+                            ttsText = o.optString("ttsText", "").ifBlank { null },
                         )
                     )
                 }
@@ -865,6 +917,7 @@ class MainActivity : AppCompatActivity() {
                 put("ts", it.ts)
                 put("audioPath", it.audioPath ?: "")
                 put("audioUrl", it.audioUrl ?: "")
+                put("ttsText", it.ttsText ?: "")
             })
         }
         getSharedPreferences("aigor_prefs", MODE_PRIVATE)

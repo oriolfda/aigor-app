@@ -6,4 +6,5 @@ data class ChatMessage(
     val ts: Long = System.currentTimeMillis(),
     val audioPath: String? = null,
     val audioUrl: String? = null,
+    val ttsText: String? = null,
 )

@@ -59,7 +59,7 @@ class ChatAdapter(
                     holder.text.setBackgroundResource(theme.botBubble)
                     holder.text.setTextColor(theme.botText)
                 }
-                if (!item.audioPath.isNullOrBlank() || !item.audioUrl.isNullOrBlank()) {
+                if (!item.audioPath.isNullOrBlank() || !item.audioUrl.isNullOrBlank() || !item.ttsText.isNullOrBlank()) {
                     holder.text.text = "▶ ${item.text}"
                     holder.text.setOnClickListener { onMessageClick?.invoke(item) }
                 } else {
