@@ -466,6 +466,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestTranscription(msg: ChatMessage) {
+        if (!msg.transcriptText.isNullOrBlank()) {
+            adapter.toggleTranscript(msg.ts)
+            return
+        }
+
         thread {
             try {
                 val bytes = when {
@@ -482,18 +487,49 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread { statusText.text = getString(R.string.local_audio_not_found) }
                     return@thread
                 }
-                val attachment = AttachmentData(
-                    name = "transcription-audio.m4a",
-                    mime = "audio/mp4",
-                    base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
-                )
-                runOnUiThread {
-                    addMessage(ChatMessage("assistant", getString(R.string.transcribing_audio)))
-                }
+
                 val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
                 val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
                 val token = prefs.getString("openclaw_hook_token", "").orEmpty().trim()
-                sendToOpenClaw(endpoint, token, getString(R.string.transcribe_only_prompt), attachment)
+                if (endpoint.isBlank() || token.isBlank()) {
+                    runOnUiThread { statusText.text = getString(R.string.status_configure_endpoint_token) }
+                    return@thread
+                }
+
+                val attachment = JSONObject().apply {
+                    put("name", "transcription-audio.m4a")
+                    put("mime", "audio/mp4")
+                    put("dataBase64", Base64.encodeToString(bytes, Base64.NO_WRAP))
+                }
+
+                val payload = JSONObject().apply {
+                    put("message", getString(R.string.transcribe_only_prompt))
+                    put("sessionId", "aigor-app-chat")
+                    put("prefs", JSONObject().apply {
+                        put("showTranscription", true)
+                    })
+                    put("attachment", attachment)
+                }
+
+                val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("Authorization", "Bearer $token")
+                    connectTimeout = 20000
+                    readTimeout = 120000
+                    doOutput = true
+                }
+                OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+                val code = conn.responseCode
+                val body = if (code in 200..299) conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                else conn.errorStream?.bufferedReader()?.use(BufferedReader::readText).orEmpty()
+                conn.disconnect()
+
+                val transcript = parseAssistantText(body, code)
+                runOnUiThread {
+                    adapter.setTranscript(msg.ts, transcript, true)
+                    statusText.text = getString(R.string.transcription_ready)
+                }
             } catch (e: Exception) {
                 runOnUiThread { statusText.text = getString(R.string.attachment_error, e.message) }
             }

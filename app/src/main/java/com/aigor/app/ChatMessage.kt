@@ -9,4 +9,6 @@ data class ChatMessage(
     val ttsText: String? = null,
     val imagePath: String? = null,
     val videoPath: String? = null,
+    val transcriptText: String? = null,
+    val transcriptVisible: Boolean = false,
 )

@@ -65,6 +65,8 @@ class ChatAdapter(
         val bubble: View = view.findViewById(R.id.audioBubble)
         val play: ImageButton = view.findViewById(R.id.audioPlayButton)
         val transcribe: ImageButton = view.findViewById(R.id.audioTranscribeButton)
+        val duration: TextView = view.findViewById(R.id.audioDurationText)
+        val transcript: TextView = view.findViewById(R.id.audioTranscriptText)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -180,9 +182,24 @@ class ChatAdapter(
                 holder.play.setColorFilter(theme.botText)
                 holder.play.setOnClickListener { onMessageClick?.invoke(item) }
 
+                holder.duration.text = "0:00"
+                holder.duration.setTextColor(theme.statusColor)
+
                 holder.transcribe.visibility = if (showTranscriptionOption) View.VISIBLE else View.GONE
                 holder.transcribe.setColorFilter(theme.botText)
+                if (!item.transcriptText.isNullOrBlank()) {
+                    holder.transcribe.setImageResource(if (item.transcriptVisible) android.R.drawable.ic_menu_close_clear_cancel else android.R.drawable.ic_menu_edit)
+                } else {
+                    holder.transcribe.setImageResource(android.R.drawable.ic_menu_edit)
+                }
                 holder.transcribe.setOnClickListener { onAudioTranscribeClick?.invoke(item) }
+
+                if (!item.transcriptText.isNullOrBlank() && item.transcriptVisible) {
+                    holder.transcript.visibility = View.VISIBLE
+                    holder.transcript.text = item.transcriptText
+                } else {
+                    holder.transcript.visibility = View.GONE
+                }
             }
             is TypingVH -> {
                 val bubble = holder.itemView.findViewById<View>(R.id.typingBubble)
@@ -238,5 +255,25 @@ class ChatAdapter(
     fun setShowTranscriptionOption(enabled: Boolean) {
         showTranscriptionOption = enabled
         notifyDataSetChanged()
+    }
+
+    fun setTranscript(ts: Long, text: String, visible: Boolean) {
+        val idx = items.indexOfFirst { it.ts == ts }
+        if (idx >= 0) {
+            val old = items[idx]
+            items[idx] = old.copy(transcriptText = text, transcriptVisible = visible)
+            notifyItemChanged(idx)
+        }
+    }
+
+    fun toggleTranscript(ts: Long) {
+        val idx = items.indexOfFirst { it.ts == ts }
+        if (idx >= 0) {
+            val old = items[idx]
+            if (!old.transcriptText.isNullOrBlank()) {
+                items[idx] = old.copy(transcriptVisible = !old.transcriptVisible)
+                notifyItemChanged(idx)
+            }
+        }
     }
 }

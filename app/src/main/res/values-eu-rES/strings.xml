@@ -97,4 +97,5 @@
     <string name="video_preview_title">Bideo aurrebista</string>
     <string name="transcribing_audio">Audioa transkribatzen...</string>
     <string name="transcribe_only_prompt">Transkribatu audio hau bakarrik.</string>
+    <string name="transcription_ready">Transkripzioa prest</string>
 </resources>
