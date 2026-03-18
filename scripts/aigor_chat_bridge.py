@@ -354,9 +354,17 @@ class Handler(BaseHTTPRequestHandler):
             # Convert [[tts:...]] style text into real audio URL when media isn't provided.
             clean_reply, tts_text = parse_tts_from_text(reply)
             reply = clean_reply or "Resposta d'àudio generada."
-            if not media_url and tts_text:
-                lang = detect_lang(tts_text)
-                media_url = synthesize_tts_audio(tts_text, lang)
+
+            # Prefer tagged TTS text when present.
+            tts_source = tts_text
+
+            # If no tag but user sent audio, synthesize audio from textual reply anyway.
+            if not tts_source and attachment and str((attachment.get("mime") or "")).lower().startswith("audio/"):
+                tts_source = reply
+
+            if not media_url and tts_source:
+                lang = detect_lang(tts_source)
+                media_url = synthesize_tts_audio(tts_source, lang)
 
             payload = {"ok": True, "reply": reply, "sessionId": session_id}
             if media_url:
