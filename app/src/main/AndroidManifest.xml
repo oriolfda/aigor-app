@@ -9,6 +9,7 @@
         android:roundIcon="@drawable/aigor_app"
         android:label="AIGOR App"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AigorApp">
         <activity
             android:name=".MainActivity"
