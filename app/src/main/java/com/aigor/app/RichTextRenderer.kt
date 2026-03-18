@@ -1,5 +1,6 @@
 package com.aigor.app
 
+import android.graphics.Typeface
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
@@ -14,6 +15,14 @@ object RichTextRenderer {
         val spanned: Spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
         textView.text = spanned
         textView.movementMethod = LinkMovementMethod.getInstance()
+
+        if (looksLikeCode(raw)) {
+            textView.typeface = Typeface.MONOSPACE
+            textView.textSize = 14f
+        } else {
+            textView.typeface = Typeface.DEFAULT
+            textView.textSize = 16f
+        }
     }
 
     private fun toSafeHtml(raw: String): String {
@@ -56,10 +65,26 @@ object RichTextRenderer {
             txt = txt.replace("@@CODE_BLOCK_$i@@", block)
         }
 
+        // If text looks like raw code, force <pre><code> to preserve spacing.
+        if (!hasHtmlTags && looksLikeCode(noDanger)) {
+            return "<pre><code>${escapeHtml(noDanger)}</code></pre>"
+        }
+
         // Line breaks
         txt = txt.replace("\n", "<br>")
 
         return txt
+    }
+
+    private fun looksLikeCode(s: String): Boolean {
+        val t = s.trim()
+        if (t.contains("```") || t.contains("<pre") || t.contains("<code")) return true
+        val lines = t.lines()
+        if (lines.size < 3) return false
+        var score = 0
+        val markers = listOf("def ", "class ", "return ", "{", "}", "</", "<div", "if ", "for ", "while ", ";", "=>")
+        for (m in markers) if (t.contains(m)) score++
+        return score >= 3
     }
 
     private fun escapeHtml(s: String): String {
