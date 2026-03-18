@@ -87,4 +87,8 @@
     <string name="about_repo">Repo: aigor-app</string>
     <string name="html_preview_title">HTML preview</string>
     <string name="html_preview_tap">HTML content — tap to open preview</string>
+    <string name="context_status_template">Current context:
+• Model: %1$s
+• Used: %2$s / %3$s tokens (%4$s%%)
+• Free: %5$s tokens (%6$s%%)</string>
 </resources>

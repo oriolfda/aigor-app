@@ -89,4 +89,8 @@
     <string name="about_repo">Repo: aigor-app</string>
     <string name="html_preview_title">Previsualització HTML</string>
     <string name="html_preview_tap">Contingut HTML — toca per obrir previsualització</string>
+    <string name="context_status_template">Context actual:
+• Model: %1$s
+• Ocupat: %2$s / %3$s tokens (%4$s%%)
+• Lliure: %5$s tokens (%6$s%%)</string>
 </resources>

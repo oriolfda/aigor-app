@@ -722,7 +722,7 @@ class MainActivity : AppCompatActivity() {
                 val showTranscriptions = prefs.getBoolean("show_transcriptions", true)
 
                 val urls = extractUrls(message)
-                val payloadText = if (urls.isEmpty()) message else "$message\n\nURLs detectades: ${urls.joinToString(", ")}" 
+                val payloadText = if (urls.isEmpty()) message else "$message\n\nURLs detectades: ${urls.joinToString(", ")}"
                 val payload = JSONObject().apply {
                     put("message", payloadText)
                     put("sessionId", "aigor-app-chat")
@@ -841,7 +841,7 @@ class MainActivity : AppCompatActivity() {
         return try {
             val obj = JSONObject(body)
             if (!obj.optBoolean("ok", false)) {
-                return getString(R.string.context_read_error, obj.optString("error", "error")) 
+                return getString(R.string.context_read_error, obj.optString("error", "error"))
             }
             val ctx = obj.optJSONObject("context") ?: return getString(R.string.context_incomplete_response)
             val used = ctx.optLong("usedTokens", -1)
@@ -851,7 +851,18 @@ class MainActivity : AppCompatActivity() {
             val freePct = ctx.optDouble("freePercent", -1.0)
             val model = ctx.optString("model", "?")
 
-            "Context actual:\n• Model: $model\n• Ocupat: $used / $max tokens (${if (usedPct >= 0) usedPct else "?"}%)\n• Lliure: $free tokens (${if (freePct >= 0) freePct else "?"}%)"
+            val usedPctText = if (usedPct >= 0) String.format("%.1f", usedPct) else "?"
+            val freePctText = if (freePct >= 0) String.format("%.1f", freePct) else "?"
+
+            getString(
+                R.string.context_status_template,
+                model,
+                used.toString(),
+                max.toString(),
+                usedPctText,
+                free.toString(),
+                freePctText,
+            )
         } catch (_: Exception) {
             getString(R.string.context_parse_error)
         }
