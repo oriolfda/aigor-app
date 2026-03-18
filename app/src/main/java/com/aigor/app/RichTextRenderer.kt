@@ -34,9 +34,17 @@ object RichTextRenderer {
             "@@CODE_BLOCK_${blocks.lastIndex}@@"
         }
 
-        var txt = escapeHtml(withPlaceholders)
+        val hasHtmlTags = Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(withPlaceholders)
 
-        // Minimal markdown support
+        var txt = if (hasHtmlTags) {
+            // Keep user HTML tags (already sanitized above).
+            withPlaceholders
+        } else {
+            // Plain text/markdown path.
+            escapeHtml(withPlaceholders)
+        }
+
+        // Minimal markdown support (applied mostly for non-HTML input)
         txt = txt
             .replace(Regex("\\*\\*(.+?)\\*\\*"), "<b>$1</b>")
             .replace(Regex("(^|\\s)_(.+?)_($|\\s)"), "$1<i>$2</i>$3")
