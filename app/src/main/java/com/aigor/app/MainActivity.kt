@@ -13,6 +13,8 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Base64
 import android.view.MotionEvent
 import android.view.View
@@ -53,17 +55,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
     private lateinit var chatRecycler: RecyclerView
-    private lateinit var sendButton: Button
+    private lateinit var sendButton: ImageButton
     private lateinit var pendingAttachmentRow: LinearLayout
     private lateinit var pendingAttachmentPreview: ImageView
     private lateinit var pendingAttachmentText: TextView
     private lateinit var cancelAttachmentButton: Button
-    private lateinit var micButton: Button
+    private lateinit var micButton: ImageButton
     private lateinit var recordingControlsRow: LinearLayout
     private lateinit var recordDeleteButton: Button
     private lateinit var recordPauseButton: Button
     private lateinit var recordSendButton: Button
     private lateinit var recordTimerText: TextView
+    private lateinit var recordHintText: TextView
 
     private lateinit var adapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
@@ -75,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private var isRecordingPaused = false
     private var isRecordingLocked = false
     private var micStartY = 0f
+    private var micStartX = 0f
     private var recordingStartMs = 0L
     private val recordingHandler = Handler(Looper.getMainLooper())
 
@@ -131,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         recordPauseButton = findViewById(R.id.recordPauseButton)
         recordSendButton = findViewById(R.id.recordSendButton)
         recordTimerText = findViewById(R.id.recordTimerText)
+        recordHintText = findViewById(R.id.recordHintText)
 
         val theme = currentTheme()
         adapter = ChatAdapter(messages, theme)
@@ -141,6 +146,15 @@ class MainActivity : AppCompatActivity() {
         loadHistory()
         consumeSharedText(intent)
         updatePendingAttachmentUi()
+        updateComposerActionButton()
+
+        messageEdit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) {
+                updateComposerActionButton()
+            }
+        })
 
         overflowMenuButton.setOnClickListener { anchor ->
             val popup = PopupMenu(this, anchor)
@@ -214,15 +228,24 @@ class MainActivity : AppCompatActivity() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     micStartY = event.rawY
+                    micStartX = event.rawX
                     ensureAudioPermissionAndStart()
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (isRecording && !isRecordingLocked) {
                         val deltaUp = micStartY - event.rawY
+                        val deltaLeft = micStartX - event.rawX
+
+                        if (deltaLeft > 120f) {
+                            cancelRecording()
+                            statusText.text = "Gravació cancel·lada (lliscar esquerra)"
+                            return@setOnTouchListener true
+                        }
+
                         if (deltaUp > 140f) {
                             isRecordingLocked = true
-                            statusText.text = "Enregistrament bloquejat"
+                            statusText.text = "Enregistrament bloquejat 🔒"
                         }
                     }
                     true
@@ -384,6 +407,14 @@ class MainActivity : AppCompatActivity() {
                 else -> pendingAttachmentPreview.setImageResource(android.R.drawable.ic_menu_save)
             }
         }
+        updateComposerActionButton()
+    }
+
+    private fun updateComposerActionButton() {
+        val hasText = messageEdit.text?.toString()?.trim()?.isNotEmpty() == true
+        val showSend = hasText || pendingAttachment != null
+        sendButton.visibility = if (showSend) View.VISIBLE else View.GONE
+        micButton.visibility = if (showSend) View.GONE else View.VISIBLE
     }
 
     private fun ensureAudioPermissionAndStart() {
@@ -524,14 +555,13 @@ class MainActivity : AppCompatActivity() {
         messageEdit.setBackgroundResource(theme.inputBg)
         attachButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
         attachButton.setTextColor(theme.menuDotsColor)
-        micButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF22C55E.toInt())
-        micButton.setTextColor(0xFF04130A.toInt())
-        sendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
-        sendButton.setTextColor(theme.sendText)
+        micButton.setColorFilter(0xFF07130B.toInt())
+        sendButton.setColorFilter(theme.sendText)
         recordDeleteButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
         recordPauseButton.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF1F2937.toInt())
         recordSendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
         recordTimerText.setTextColor(theme.statusColor)
+        recordHintText.setTextColor(theme.statusColor)
     }
 
     private fun extractUrls(text: String): List<String> {

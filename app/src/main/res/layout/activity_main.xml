@@ -125,23 +125,26 @@
                 android:textColor="#F9FAFB"
                 android:textColorHint="#7C879A" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/sendButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="#FF5C5C"
-                android:text="Send"
-                android:textColor="#FFFFFF" />
+                android:background="@drawable/bg_round_send"
+                android:contentDescription="Enviar"
+                android:padding="12dp"
+                android:src="@drawable/ic_send_min"
+                android:visibility="gone" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/micButton"
                 android:layout_width="52dp"
                 android:layout_height="52dp"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="#22C55E"
-                android:text="🎤"
-                android:textSize="20sp" />
+                android:background="@drawable/bg_round_mic"
+                android:contentDescription="Micròfon"
+                android:padding="12dp"
+                android:src="@drawable/ic_mic_min" />
         </LinearLayout>
 
         <LinearLayout
@@ -174,6 +177,15 @@
                 android:layout_weight="1"
                 android:text="00:00"
                 android:textColor="#E5E7EB" />
+
+            <TextView
+                android:id="@+id/recordHintText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="⬅ cancel·lar | 🔒 amunt"
+                android:textColor="#9CA3AF"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/recordSendButton"
