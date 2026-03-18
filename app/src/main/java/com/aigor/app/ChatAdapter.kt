@@ -8,7 +8,11 @@ import android.view.animation.Animation
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class ChatAdapter(private val items: MutableList<ChatMessage>, private var theme: ThemeManager.UiTheme) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatAdapter(
+    private val items: MutableList<ChatMessage>,
+    private var theme: ThemeManager.UiTheme,
+    private val onMessageClick: ((ChatMessage) -> Unit)? = null,
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
         private const val VIEW_USER = 1
@@ -54,6 +58,12 @@ class ChatAdapter(private val items: MutableList<ChatMessage>, private var theme
                 } else {
                     holder.text.setBackgroundResource(theme.botBubble)
                     holder.text.setTextColor(theme.botText)
+                }
+                if (!item.audioPath.isNullOrBlank() || !item.audioUrl.isNullOrBlank()) {
+                    holder.text.text = "▶ ${item.text}"
+                    holder.text.setOnClickListener { onMessageClick?.invoke(item) }
+                } else {
+                    holder.text.setOnClickListener(null)
                 }
             }
             is TypingVH -> {

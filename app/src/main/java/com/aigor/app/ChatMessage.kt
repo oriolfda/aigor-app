@@ -3,5 +3,7 @@ package com.aigor.app
 data class ChatMessage(
     val role: String, // "user" | "assistant" | "system"
     val text: String,
-    val ts: Long = System.currentTimeMillis()
+    val ts: Long = System.currentTimeMillis(),
+    val audioPath: String? = null,
+    val audioUrl: String? = null,
 )

@@ -148,7 +148,15 @@ class MainActivity : AppCompatActivity() {
         recordDotsText = findViewById(R.id.recordDotsText)
 
         val theme = currentTheme()
-        adapter = ChatAdapter(messages, theme)
+        adapter = ChatAdapter(messages, theme) { msg ->
+            when {
+                !msg.audioPath.isNullOrBlank() -> {
+                    val f = File(msg.audioPath)
+                    if (f.exists()) playLocalAudio(f) else statusText.text = "Àudio local no trobat"
+                }
+                !msg.audioUrl.isNullOrBlank() -> tryPlayRemoteAudio(msg.audioUrl)
+            }
+        }
         chatRecycler.layoutManager = LinearLayoutManager(this)
         chatRecycler.adapter = adapter
         applyTheme(theme)
@@ -294,16 +302,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            addMessage(ChatMessage("user", previewText.ifBlank { "(adjunt)" }))
-            messageEdit.setText("")
-            addMessage(ChatMessage("typing", ""))
-
             val attachmentToSend = pendingAttachment
+            var sentAudioPath: String? = null
             if (attachmentToSend?.mime?.startsWith("audio/") == true) {
                 try {
                     val bytes = Base64.decode(attachmentToSend.base64, Base64.DEFAULT)
                     val f = File(cacheDir, "sent-audio-${System.currentTimeMillis()}.m4a")
                     f.writeBytes(bytes)
+                    sentAudioPath = f.absolutePath
                     lastSentAudioFile = f
                     sentAudioFiles.add(0, f)
                     if (sentAudioFiles.size > 50) {
@@ -313,6 +319,10 @@ class MainActivity : AppCompatActivity() {
                 } catch (_: Exception) {
                 }
             }
+
+            addMessage(ChatMessage("user", previewText.ifBlank { "(adjunt)" }, audioPath = sentAudioPath))
+            messageEdit.setText("")
+            addMessage(ChatMessage("typing", ""))
 
             sendToOpenClaw(endpoint, token, message, attachmentToSend)
             pendingAttachment = null
@@ -676,10 +686,10 @@ class MainActivity : AppCompatActivity() {
 
                 runOnUiThread {
                     val assistantText = parseAssistantText(body, code)
-                    adapter.replaceLast(ChatMessage("assistant", assistantText))
                     val mediaUrl = try {
                         JSONObject(body).optString("mediaUrl", "")
                     } catch (_: Exception) { "" }
+                    adapter.replaceLast(ChatMessage("assistant", assistantText, audioUrl = mediaUrl.ifBlank { null }))
                     if (mediaUrl.isNotBlank()) {
                         tryPlayRemoteAudio(mediaUrl)
                     }
@@ -824,7 +834,15 @@ class MainActivity : AppCompatActivity() {
                 val o = arr.getJSONObject(i)
                 val role = o.optString("role", "assistant")
                 if (role != "typing") {
-                    messages.add(ChatMessage(role, o.optString("text", ""), o.optLong("ts", 0L)))
+                    messages.add(
+                        ChatMessage(
+                            role = role,
+                            text = o.optString("text", ""),
+                            ts = o.optLong("ts", 0L),
+                            audioPath = o.optString("audioPath", "").ifBlank { null },
+                            audioUrl = o.optString("audioUrl", "").ifBlank { null },
+                        )
+                    )
                 }
             }
         } catch (_: Exception) {
@@ -840,6 +858,8 @@ class MainActivity : AppCompatActivity() {
                 put("role", it.role)
                 put("text", it.text)
                 put("ts", it.ts)
+                put("audioPath", it.audioPath ?: "")
+                put("audioUrl", it.audioUrl ?: "")
             })
         }
         getSharedPreferences("aigor_prefs", MODE_PRIVATE)
