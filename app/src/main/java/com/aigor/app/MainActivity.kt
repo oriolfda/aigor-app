@@ -1,7 +1,9 @@
 package com.aigor.app
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -11,6 +13,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -45,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chatRecycler: RecyclerView
     private lateinit var sendButton: Button
     private lateinit var pendingAttachmentRow: LinearLayout
+    private lateinit var pendingAttachmentPreview: ImageView
     private lateinit var pendingAttachmentText: TextView
     private lateinit var cancelAttachmentButton: Button
     private lateinit var adapter: ChatAdapter
@@ -87,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         chatRecycler = findViewById(R.id.chatRecycler)
         sendButton = findViewById(R.id.sendButton)
         pendingAttachmentRow = findViewById(R.id.pendingAttachmentRow)
+        pendingAttachmentPreview = findViewById(R.id.pendingAttachmentPreview)
         pendingAttachmentText = findViewById(R.id.pendingAttachmentText)
         cancelAttachmentButton = findViewById(R.id.cancelAttachmentButton)
 
@@ -111,6 +116,10 @@ class MainActivity : AppCompatActivity() {
                     }
                     R.id.menu_settings -> {
                         startActivity(Intent(this, SettingsActivity::class.java))
+                        true
+                    }
+                    R.id.menu_about -> {
+                        showAboutDialog()
                         true
                     }
                     R.id.menu_clear_chat -> {
@@ -268,10 +277,27 @@ class MainActivity : AppCompatActivity() {
         if (att == null) {
             pendingAttachmentRow.visibility = View.GONE
             attachButton.text = "+"
+            pendingAttachmentPreview.setImageResource(android.R.drawable.ic_menu_gallery)
         } else {
             pendingAttachmentRow.visibility = View.VISIBLE
             pendingAttachmentText.text = "📎 ${att.name}"
             attachButton.text = "📎"
+
+            when {
+                att.mime.startsWith("image/") -> {
+                    try {
+                        val bytes = Base64.decode(att.base64, Base64.DEFAULT)
+                        val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        if (bmp != null) pendingAttachmentPreview.setImageBitmap(bmp)
+                        else pendingAttachmentPreview.setImageResource(android.R.drawable.ic_menu_gallery)
+                    } catch (_: Exception) {
+                        pendingAttachmentPreview.setImageResource(android.R.drawable.ic_menu_gallery)
+                    }
+                }
+                att.mime.startsWith("video/") -> pendingAttachmentPreview.setImageResource(android.R.drawable.ic_media_play)
+                att.mime.startsWith("audio/") -> pendingAttachmentPreview.setImageResource(android.R.drawable.ic_btn_speak_now)
+                else -> pendingAttachmentPreview.setImageResource(android.R.drawable.ic_menu_save)
+            }
         }
     }
 
@@ -441,6 +467,26 @@ class MainActivity : AppCompatActivity() {
         } catch (_: Exception) {
             body
         }
+    }
+
+    private fun showAboutDialog() {
+        val pkg = packageManager.getPackageInfo(packageName, 0)
+        val versionName = pkg.versionName ?: "?"
+        val versionCode = pkg.longVersionCode
+
+        val info = buildString {
+            appendLine("AIGOR App")
+            appendLine("Versió: $versionName ($versionCode)")
+            appendLine("Bridge: OpenClaw /chat + /status")
+            appendLine("Funcions: xat, context, adjunts (imatge/vídeo/àudio)")
+            appendLine("")
+            appendLine("Repo: aigor-app")
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Quant a")
+            .setMessage(info)
+            .setPositiveButton("Tancar", null)
+            .show()
     }
 
     private fun addMessage(msg: ChatMessage) {

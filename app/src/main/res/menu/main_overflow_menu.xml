@@ -7,6 +7,9 @@
         android:id="@+id/menu_settings"
         android:title="Settings" />
     <item
+        android:id="@+id/menu_about"
+        android:title="Quant a" />
+    <item
         android:id="@+id/menu_clear_chat"
         android:title="Netejar xat" />
 </menu>
