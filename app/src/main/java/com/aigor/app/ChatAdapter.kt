@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +26,7 @@ class ChatAdapter(
         private const val VIEW_USER = 1
         private const val VIEW_BOT = 2
         private const val VIEW_TYPING = 3
+        private const val VIEW_HTML = 4
     }
 
     class MessageVH(view: View) : RecyclerView.ViewHolder(view) {
@@ -36,10 +39,18 @@ class ChatAdapter(
         val d3: TextView = view.findViewById(R.id.dot3)
     }
 
+    class HtmlVH(view: View) : RecyclerView.ViewHolder(view) {
+        val web: WebView = view.findViewById(R.id.htmlWeb)
+        val label: TextView = view.findViewById(R.id.htmlLabel)
+    }
+
     override fun getItemViewType(position: Int): Int {
-        return when (items[position].role) {
-            "user" -> VIEW_USER
-            "typing" -> VIEW_TYPING
+        val item = items[position]
+        val hasHtml = Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(item.text)
+        return when {
+            item.role == "user" -> VIEW_USER
+            item.role == "typing" -> VIEW_TYPING
+            hasHtml -> VIEW_HTML
             else -> VIEW_BOT
         }
     }
@@ -49,6 +60,7 @@ class ChatAdapter(
         return when (viewType) {
             VIEW_USER -> MessageVH(inflater.inflate(R.layout.item_message_user, parent, false))
             VIEW_TYPING -> TypingVH(inflater.inflate(R.layout.item_message_typing, parent, false))
+            VIEW_HTML -> HtmlVH(inflater.inflate(R.layout.item_message_html, parent, false))
             else -> MessageVH(inflater.inflate(R.layout.item_message_bot, parent, false))
         }
     }
@@ -65,15 +77,10 @@ class ChatAdapter(
                     holder.text.setTextColor(theme.botText)
                 }
                 val hasAudio = !item.audioPath.isNullOrBlank() || !item.audioUrl.isNullOrBlank() || !item.ttsText.isNullOrBlank()
-                val hasHtml = Regex("<\\s*[a-zA-Z][^>]*>").containsMatchIn(item.text)
 
                 if (hasAudio) {
                     val icon = if (playingMessageTs == item.ts) "⏸" else "▶"
                     RichTextRenderer.bind(holder.text, "$icon ${item.text}")
-                    holder.text.setOnClickListener { onMessageClick?.invoke(item) }
-                } else if (hasHtml) {
-                    val ctx = holder.text.context
-                    holder.text.text = "🧩 ${ctx.getString(R.string.html_preview_tap)}"
                     holder.text.setOnClickListener { onMessageClick?.invoke(item) }
                 } else {
                     RichTextRenderer.bind(holder.text, item.text)
@@ -84,9 +91,27 @@ class ChatAdapter(
                     val ctx = holder.text.context
                     val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     clipboard.setPrimaryClip(ClipData.newPlainText("aigor-message", item.text))
-                    Toast.makeText(ctx, "Copiat", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(ctx, ctx.getString(R.string.copied), Toast.LENGTH_SHORT).show()
                     true
                 }
+            }
+            is HtmlVH -> {
+                val item = items[position]
+                holder.label.text = holder.itemView.context.getString(R.string.html_preview_tap)
+                val ws: WebSettings = holder.web.settings
+                ws.javaScriptEnabled = false
+                ws.domStorageEnabled = false
+                ws.allowFileAccess = false
+                ws.allowContentAccess = false
+                holder.web.loadDataWithBaseURL(
+                    null,
+                    "<html><body style='margin:0;background:#111827;color:#e5e7eb;font-family:Inter,Arial,sans-serif;font-size:14px;'>${item.text}</body></html>",
+                    "text/html",
+                    "utf-8",
+                    null
+                )
+                holder.web.setOnClickListener { onMessageClick?.invoke(item) }
+                holder.itemView.setOnClickListener { onMessageClick?.invoke(item) }
             }
             is TypingVH -> {
                 val bubble = holder.itemView.findViewById<View>(R.id.typingBubble)

@@ -93,4 +93,5 @@
 • Model: %1$s
 • Ocupat: %2$s / %3$s tokens (%4$s%%)
 • Lliure: %5$s tokens (%6$s%%)</string>
+    <string name="copied">Copiat</string>
 </resources>

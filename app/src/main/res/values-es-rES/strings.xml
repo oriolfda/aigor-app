@@ -91,4 +91,5 @@
 • Modelo: %1$s
 • Ocupado: %2$s / %3$s tokens (%4$s%%)
 • Libre: %5$s tokens (%6$s%%)</string>
+    <string name="copied">Copiado</string>
 </resources>
