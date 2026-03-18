@@ -5,26 +5,34 @@
     android:orientation="horizontal"
     android:paddingVertical="4dp">
 
-    <TextView
-        android:id="@+id/audioPlayButton"
+    <LinearLayout
+        android:id="@+id/audioBubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:background="@drawable/bg_chat_bot_ember"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="10dp"
-        android:text="▶ Àudio"
-        android:textColor="#F9FAFB" />
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="6dp">
 
-    <TextView
-        android:id="@+id/audioTranscribeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_chat_bot_ember"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="10dp"
-        android:text="📝 Transcriure"
-        android:textColor="#F9FAFB" />
+        <ImageButton
+            android:id="@+id/audioPlayButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Play"
+            android:src="@drawable/ic_play_min" />
+
+        <ImageButton
+            android:id="@+id/audioTranscribeButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Transcribe"
+            android:src="@android:drawable/ic_menu_edit"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
     <Space
         android:layout_width="0dp"

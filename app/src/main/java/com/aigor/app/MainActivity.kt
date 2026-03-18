@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var composerRow: LinearLayout
     private lateinit var clipButton: ImageButton
     private lateinit var cameraButton: ImageButton
+    private lateinit var messageInputContainer: LinearLayout
     private lateinit var messageEdit: EditText
     private lateinit var statusText: TextView
     private lateinit var chatRecycler: RecyclerView
@@ -140,6 +141,7 @@ class MainActivity : AppCompatActivity() {
         composerRow = findViewById(R.id.composerRow)
         clipButton = findViewById(R.id.clipButton)
         cameraButton = findViewById(R.id.cameraButton)
+        messageInputContainer = findViewById(R.id.messageInputContainer)
         messageEdit = findViewById(R.id.messageEdit)
         statusText = findViewById(R.id.statusText)
         chatRecycler = findViewById(R.id.chatRecycler)
@@ -764,6 +766,7 @@ class MainActivity : AppCompatActivity() {
         statusText.setTextColor(theme.statusColor)
         messageEdit.setTextColor(theme.messageTextColor)
         messageEdit.setHintTextColor(theme.messageHintColor)
+        messageInputContainer.setBackgroundResource(theme.inputBg)
         clipButton.setColorFilter(theme.sendTint)
         cameraButton.setColorFilter(theme.sendTint)
         micButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)

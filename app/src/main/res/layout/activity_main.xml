@@ -98,6 +98,7 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/messageInputContainer"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

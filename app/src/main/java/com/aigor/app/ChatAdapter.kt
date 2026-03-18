@@ -12,6 +12,7 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -61,8 +62,9 @@ class ChatAdapter(
     }
 
     class AudioVH(view: View) : RecyclerView.ViewHolder(view) {
-        val play: TextView = view.findViewById(R.id.audioPlayButton)
-        val transcribe: TextView = view.findViewById(R.id.audioTranscribeButton)
+        val bubble: View = view.findViewById(R.id.audioBubble)
+        val play: ImageButton = view.findViewById(R.id.audioPlayButton)
+        val transcribe: ImageButton = view.findViewById(R.id.audioTranscribeButton)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -171,15 +173,15 @@ class ChatAdapter(
             }
             is AudioVH -> {
                 val item = items[position]
-                val icon = if (playingMessageTs == item.ts) "⏸" else "▶"
-                holder.play.text = "$icon ${item.text}"
-                holder.play.setBackgroundResource(theme.botBubble)
-                holder.play.setTextColor(theme.botText)
+                holder.bubble.setBackgroundResource(theme.botBubble)
+
+                val playIcon = if (playingMessageTs == item.ts) R.drawable.ic_pause_min else R.drawable.ic_play_min
+                holder.play.setImageResource(playIcon)
+                holder.play.setColorFilter(theme.botText)
                 holder.play.setOnClickListener { onMessageClick?.invoke(item) }
 
-                holder.transcribe.setBackgroundResource(theme.botBubble)
-                holder.transcribe.setTextColor(theme.botText)
                 holder.transcribe.visibility = if (showTranscriptionOption) View.VISIBLE else View.GONE
+                holder.transcribe.setColorFilter(theme.botText)
                 holder.transcribe.setOnClickListener { onAudioTranscribeClick?.invoke(item) }
             }
             is TypingVH -> {
