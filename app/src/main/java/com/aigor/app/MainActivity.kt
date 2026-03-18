@@ -26,10 +26,10 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.appbar.MaterialToolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
@@ -58,8 +58,7 @@ class MainActivity : AppCompatActivity() {
     )
 
     private lateinit var rootLayout: View
-    private lateinit var titleText: TextView
-    private lateinit var overflowMenuButton: ImageButton
+    private lateinit var topToolbar: MaterialToolbar
     private lateinit var composerRow: LinearLayout
     private lateinit var clipButton: ImageButton
     private lateinit var cameraButton: ImageButton
@@ -135,8 +134,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         rootLayout = findViewById(R.id.rootLayout)
-        titleText = findViewById(R.id.titleText)
-        overflowMenuButton = findViewById(R.id.overflowMenuButton)
+        topToolbar = findViewById(R.id.topToolbar)
         composerRow = findViewById(R.id.composerRow)
         clipButton = findViewById(R.id.clipButton)
         cameraButton = findViewById(R.id.cameraButton)
@@ -187,34 +185,29 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        overflowMenuButton.setOnClickListener { anchor ->
-            val popup = PopupMenu(this, anchor)
-            popup.menuInflater.inflate(R.menu.main_overflow_menu, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.menu_status -> {
-                        fetchContextStatus()
-                        true
-                    }
-                    R.id.menu_settings -> {
-                        startActivity(Intent(this, SettingsActivity::class.java))
-                        true
-                    }
-                    R.id.menu_about -> {
-                        showAboutDialog()
-                        true
-                    }
-                    R.id.menu_clear_chat -> {
-                        messages.clear()
-                        adapter.notifyDataSetChanged()
-                        saveHistory()
-                        statusText.text = getString(R.string.status_chat_cleared)
-                        true
-                    }
-                    else -> false
+        topToolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_status -> {
+                    fetchContextStatus()
+                    true
                 }
+                R.id.menu_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                R.id.menu_about -> {
+                    showAboutDialog()
+                    true
+                }
+                R.id.menu_clear_chat -> {
+                    messages.clear()
+                    adapter.notifyDataSetChanged()
+                    saveHistory()
+                    statusText.text = getString(R.string.status_chat_cleared)
+                    true
+                }
+                else -> false
             }
-            popup.show()
         }
 
         clipButton.setOnClickListener {
@@ -685,10 +678,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyTheme(theme: ThemeManager.UiTheme) {
         rootLayout.setBackgroundColor(theme.screenBg)
-        titleText.setTextColor(theme.titleColor)
+        topToolbar.setBackgroundColor(theme.screenBg)
+        topToolbar.setTitleTextColor(theme.titleColor)
+        topToolbar.overflowIcon?.setTint(theme.menuDotsColor)
         statusText.setTextColor(theme.statusColor)
-        overflowMenuButton.setColorFilter(theme.menuDotsColor)
-        overflowMenuButton.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         messageEdit.setTextColor(theme.messageTextColor)
         messageEdit.setHintTextColor(theme.messageHintColor)
         clipButton.setColorFilter(theme.sendTint)
