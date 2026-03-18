@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         val sendButton: Button = findViewById(R.id.sendButton)
 
         val prefs = getSharedPreferences("aigor_prefs", MODE_PRIVATE)
-        val savedEndpoint = prefs.getString("openclaw_endpoint", "http://192.168.0.210:18789/hooks/wake")
+        val savedEndpoint = prefs.getString("openclaw_endpoint", "http://192.168.0.102:18789/hooks/wake")
         val savedToken = prefs.getString("openclaw_hook_token", "")
         endpointEdit.setText(savedEndpoint)
         tokenEdit.setText(savedToken)
