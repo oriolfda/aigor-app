@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="AIGOR"
+            android:text="@string/title_app"
             android:textColor="#F3F4F6"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -27,7 +27,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
-            android:contentDescription="Menu"
+            android:contentDescription="@string/cd_menu"
             android:padding="8dp"
             android:src="@drawable/ic_more_vert_custom" />
     </LinearLayout>
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="12dp"
         android:paddingBottom="6dp"
-        android:text="Estat: llest"
+        android:text="@string/status_ready"
         android:textColor="#7C879A"
         android:textSize="12sp" />
 
@@ -84,7 +84,7 @@
                 android:background="#1F2937"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="8dp"
-                android:text="📎 fitxer"
+                android:text="@string/pending_file"
                 android:textColor="#E5E7EB"
                 android:textSize="13sp" />
 
@@ -137,7 +137,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@android:color/transparent"
-                    android:contentDescription="Adjuntar"
+                    android:contentDescription="@string/cd_attach"
                     android:padding="6dp"
                     android:src="@drawable/ic_attach_min" />
 
@@ -146,7 +146,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@android:color/transparent"
-                    android:contentDescription="Càmera"
+                    android:contentDescription="@string/cd_camera"
                     android:padding="6dp"
                     android:src="@drawable/ic_camera_min" />
             </LinearLayout>
@@ -157,7 +157,7 @@
                 android:layout_height="52dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_round_send"
-                android:contentDescription="Enviar"
+                android:contentDescription="@string/cd_send"
                 android:padding="12dp"
                 android:src="@drawable/ic_send_min"
                 android:visibility="gone" />
@@ -168,7 +168,7 @@
                 android:layout_height="52dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_round_mic"
-                android:contentDescription="Micròfon"
+                android:contentDescription="@string/cd_mic"
                 android:padding="12dp"
                 android:src="@drawable/ic_mic_min" />
         </LinearLayout>
@@ -188,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                android:text="0:00"
+                android:text="@string/timer_zero"
                 android:textColor="#E5E7EB"
                 android:textSize="18sp" />
 
@@ -197,7 +197,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="@android:color/transparent"
-                android:contentDescription="Esborrar gravació"
+                android:contentDescription="@string/cd_delete_recording"
                 android:src="@android:drawable/ic_menu_delete" />
 
             <TextView
@@ -218,7 +218,7 @@
                 android:layout_height="42dp"
                 android:layout_marginEnd="10dp"
                 android:background="@android:color/transparent"
-                android:contentDescription="Pausar gravació"
+                android:contentDescription="@string/cd_pause_recording"
                 android:src="@drawable/ic_pause_min" />
 
             <ImageButton
@@ -226,7 +226,7 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:background="@drawable/bg_round_send_green"
-                android:contentDescription="Enviar gravació"
+                android:contentDescription="@string/cd_send_recording"
                 android:padding="14dp"
                 android:src="@drawable/ic_send_green_min" />
         </LinearLayout>

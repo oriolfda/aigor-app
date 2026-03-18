@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
             val b64 = bitmapToBase64(bitmap)
             pendingAttachment = AttachmentData(name = "camera-photo.jpg", mime = "image/jpeg", base64 = b64)
             updatePendingAttachmentUi()
-            statusText.text = "Foto preparada"
+            statusText.text = getString(R.string.photo_ready)
         }
     }
 
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         if (granted) {
             startPressRecording()
         } else {
-            statusText.text = "Cal permís de micròfon"
+            statusText.text = getString(R.string.mic_permission_required)
         }
     }
 
@@ -227,7 +227,7 @@ class MainActivity : AppCompatActivity() {
         cancelAttachmentButton.setOnClickListener {
             pendingAttachment = null
             updatePendingAttachmentUi()
-            statusText.text = "Adjunt eliminat"
+            statusText.text = getString(R.string.attachment_removed)
         }
 
         playLastAudioButton.setOnClickListener {
@@ -289,11 +289,11 @@ class MainActivity : AppCompatActivity() {
             val message = messageEdit.text.toString().trim()
 
             if (endpoint.isBlank()) {
-                statusText.text = "Estat: falta endpoint (Settings)"
+                statusText.text = getString(R.string.status_missing_endpoint)
                 return@setOnClickListener
             }
             if (token.isBlank()) {
-                statusText.text = "Estat: falta token (Settings)"
+                statusText.text = getString(R.string.status_missing_token)
                 return@setOnClickListener
             }
             if (message.isBlank() && pendingAttachment == null) {
@@ -326,7 +326,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            addMessage(ChatMessage("user", previewText.ifBlank { "(adjunt)" }, audioPath = sentAudioPath))
+            addMessage(ChatMessage("user", previewText.ifBlank { getString(R.string.attachment_placeholder) }, audioPath = sentAudioPath))
             messageEdit.setText("")
             addMessage(ChatMessage("typing", ""))
 
@@ -375,7 +375,7 @@ class MainActivity : AppCompatActivity() {
                 val current = messageEdit.text.toString().trim()
                 val combined = if (current.isBlank()) shared else "$current\n\n$shared"
                 messageEdit.setText(combined)
-                statusText.text = "Estat: text compartit carregat"
+                statusText.text = getString(R.string.status_shared_text_loaded)
             }
         }
     }
@@ -384,26 +384,26 @@ class MainActivity : AppCompatActivity() {
         try {
             val mime = contentResolver.getType(uri).orEmpty()
             if (!(mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/"))) {
-                statusText.text = "Només imatge, vídeo o àudio"
+                statusText.text = getString(R.string.only_image_video_audio)
                 return
             }
 
-            val name = queryName(uri) ?: "adjunt"
+            val name = queryName(uri) ?: getString(R.string.attachment_generic_name)
             val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: run {
-                statusText.text = "No s'ha pogut llegir el fitxer"
+                statusText.text = getString(R.string.file_read_error)
                 return
             }
             if (bytes.size > 12 * 1024 * 1024) {
-                statusText.text = "Fitxer massa gran (>12MB)"
+                statusText.text = getString(R.string.file_too_large)
                 return
             }
 
             val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
             pendingAttachment = AttachmentData(name = name, mime = mime, base64 = b64)
             updatePendingAttachmentUi()
-            statusText.text = "Adjunt preparat: $name"
+            statusText.text = getString(R.string.attachment_ready, name)
         } catch (e: Exception) {
-            statusText.text = "Error adjunt: ${e.message}"
+            statusText.text = getString(R.string.attachment_error, e.message)
         }
     }
 
@@ -417,16 +417,16 @@ class MainActivity : AppCompatActivity() {
     private fun showSentAudiosDialog() {
         val list = sentAudioFiles.filter { it.exists() }
         if (list.isEmpty()) {
-            statusText.text = "No hi ha àudios enviats"
+            statusText.text = getString(R.string.no_sent_audios)
             return
         }
         val labels = list.mapIndexed { idx, f -> "${idx + 1}. ${f.name}" }.toTypedArray()
         AlertDialog.Builder(this)
-            .setTitle("Àudios enviats")
+            .setTitle(getString(R.string.sent_audios_title))
             .setItems(labels) { _, which ->
                 playLocalAudio(list[which])
             }
-            .setNegativeButton("Tancar", null)
+            .setNegativeButton(getString(R.string.close), null)
             .show()
     }
 
@@ -437,11 +437,11 @@ class MainActivity : AppCompatActivity() {
             if (mp.isPlaying) {
                 mp.pause()
                 adapter.setPlayingMessage(null)
-                statusText.text = "Àudio en pausa"
+                statusText.text = getString(R.string.audio_paused)
             } else {
                 mp.start()
                 adapter.setPlayingMessage(msg.ts)
-                statusText.text = "Reproduint àudio..."
+                statusText.text = getString(R.string.playing_audio)
             }
             return
         }
@@ -449,7 +449,7 @@ class MainActivity : AppCompatActivity() {
         when {
             !msg.audioPath.isNullOrBlank() -> {
                 val f = File(msg.audioPath)
-                if (f.exists()) playLocalAudio(f, msg.ts) else statusText.text = "Àudio local no trobat"
+                if (f.exists()) playLocalAudio(f, msg.ts) else statusText.text = getString(R.string.local_audio_not_found)
             }
             !msg.audioUrl.isNullOrBlank() -> tryPlayRemoteAudio(msg.audioUrl, msg.ts)
         }
@@ -471,9 +471,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 prepareAsync()
             }
-            statusText.text = "Reproduint àudio..."
+            statusText.text = getString(R.string.playing_audio)
         } catch (e: Exception) {
-            statusText.text = "No s'ha pogut reproduir l'àudio: ${e.message}"
+            statusText.text = getString(R.string.audio_play_error, e.message)
             currentPlayingTs = null
             adapter.setPlayingMessage(null)
         }
@@ -498,7 +498,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 prepareAsync()
             }
-            statusText.text = "Reproduint resposta d'àudio..."
+            statusText.text = getString(R.string.playing_reply_audio)
         } catch (_: Exception) {
             currentPlayingTs = null
             adapter.setPlayingMessage(null)
@@ -576,10 +576,10 @@ class MainActivity : AppCompatActivity() {
             recordingStartMs = System.currentTimeMillis()
             composerRow.visibility = View.GONE
             recordingControlsRow.visibility = View.VISIBLE
-            statusText.text = "🎙 Gravant... llisca amunt per bloquejar"
+            statusText.text = getString(R.string.recording_swipe_up_lock)
             startRecordingTicker()
         } catch (e: Exception) {
-            statusText.text = "No s'ha pogut iniciar la gravació: ${e.message}"
+            statusText.text = getString(R.string.recording_start_error, e.message)
             cleanupRecorderState()
         }
     }
@@ -605,12 +605,12 @@ class MainActivity : AppCompatActivity() {
                 rec.pause()
                 isRecordingPaused = true
                 recordPauseButton.setImageResource(R.drawable.ic_play_min)
-                statusText.text = "Gravació en pausa"
+                statusText.text = getString(R.string.recording_paused)
             } else {
                 rec.resume()
                 isRecordingPaused = false
                 recordPauseButton.setImageResource(R.drawable.ic_pause_min)
-                statusText.text = "🎙 Gravant..."
+                statusText.text = getString(R.string.recording_in_progress)
             }
         } catch (_: Exception) {
             // Some devices may not support pause/resume reliably.
@@ -636,7 +636,7 @@ class MainActivity : AppCompatActivity() {
         cleanupRecorderState()
 
         if (file == null || !file.exists()) {
-            statusText.text = "No s'ha pogut desar l'àudio"
+            statusText.text = getString(R.string.audio_save_error)
             return
         }
 
@@ -647,7 +647,7 @@ class MainActivity : AppCompatActivity() {
             base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
         )
         updatePendingAttachmentUi()
-        statusText.text = "Àudio preparat"
+        statusText.text = getString(R.string.audio_ready)
 
         if (sendNow) {
             sendButton.performClick()
@@ -707,7 +707,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendToOpenClaw(endpoint: String, token: String, message: String, attachment: AttachmentData?) {
-        statusText.text = "Estat: enviant..."
+        statusText.text = getString(R.string.status_sending)
 
         thread {
             try {
@@ -759,29 +759,29 @@ class MainActivity : AppCompatActivity() {
                     val (assistantText, ttsText) = extractTtsBlock(assistantTextRaw)
 
                     if (!showTranscriptions && mediaUrl.isNotBlank()) {
-                        val audioMsg = ChatMessage("assistant", "Àudio de resposta", audioUrl = mediaUrl)
+                        val audioMsg = ChatMessage("assistant", getString(R.string.reply_audio), audioUrl = mediaUrl)
                         adapter.replaceLast(audioMsg)
                         tryPlayRemoteAudio(mediaUrl, audioMsg.ts)
                     } else {
                         adapter.replaceLast(ChatMessage("assistant", assistantText, ttsText = ttsText))
                         if (mediaUrl.isNotBlank()) {
-                            val audioMsg = ChatMessage("assistant", "Àudio de resposta", audioUrl = mediaUrl)
+                            val audioMsg = ChatMessage("assistant", getString(R.string.reply_audio), audioUrl = mediaUrl)
                             addMessage(audioMsg)
                             tryPlayRemoteAudio(mediaUrl, audioMsg.ts)
                         } else if (!ttsText.isNullOrBlank()) {
-                            addMessage(ChatMessage("assistant", "[TTS pendent de veu servidor]"))
+                            addMessage(ChatMessage("assistant", getString(R.string.tts_pending_server_voice)))
                         }
                     }
 
-                    statusText.text = if (code in 200..299) "Estat: enviat OK ($code)" else "Estat: error HTTP $code"
+                    statusText.text = if (code in 200..299) getString(R.string.status_sent_ok, code) else getString(R.string.status_http_error, code)
                     saveHistory()
                     scrollBottom()
                 }
                 conn.disconnect()
             } catch (e: Exception) {
                 runOnUiThread {
-                    adapter.replaceLast(ChatMessage("assistant", "Error de connexió: ${e.message}"))
-                    statusText.text = "Estat: error ${e.message}"
+                    adapter.replaceLast(ChatMessage("assistant", getString(R.string.connection_error, e.message)))
+                    statusText.text = getString(R.string.status_error, e.message)
                     saveHistory()
                     scrollBottom()
                 }
@@ -794,12 +794,12 @@ class MainActivity : AppCompatActivity() {
         val endpoint = prefs.getString("openclaw_endpoint", "").orEmpty().trim()
         val token = prefs.getString("openclaw_hook_token", "").orEmpty().trim()
         if (endpoint.isBlank() || token.isBlank()) {
-            statusText.text = "Estat: configura endpoint/token a Settings"
+            statusText.text = getString(R.string.status_configure_endpoint_token)
             return
         }
 
         val statusUrl = endpoint.replace("/chat", "/status")
-        addMessage(ChatMessage("assistant", "Consultant estat de context..."))
+        addMessage(ChatMessage("assistant", getString(R.string.checking_context_status)))
 
         thread {
             try {
@@ -818,25 +818,25 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     val msg = parseStatusText(body, code)
                     addMessage(ChatMessage("assistant", msg))
-                    statusText.text = if (code in 200..299) "Estat: context rebut" else "Estat: error context ($code)"
+                    statusText.text = if (code in 200..299) getString(R.string.status_context_received) else getString(R.string.status_context_error, code)
                 }
                 conn.disconnect()
             } catch (e: Exception) {
                 runOnUiThread {
-                    addMessage(ChatMessage("assistant", "Error consultant context: ${e.message}"))
+                    addMessage(ChatMessage("assistant", getString(R.string.context_check_error, e.message)))
                 }
             }
         }
     }
 
     private fun parseStatusText(body: String, code: Int): String {
-        if (body.isBlank()) return "No hi ha dades de context (HTTP $code)"
+        if (body.isBlank()) return getString(R.string.no_context_data, code)
         return try {
             val obj = JSONObject(body)
             if (!obj.optBoolean("ok", false)) {
-                return "No s'ha pogut llegir el context: ${obj.optString("error", "error")}" 
+                return getString(R.string.context_read_error, obj.optString("error", "error")) 
             }
-            val ctx = obj.optJSONObject("context") ?: return "Resposta de context incompleta"
+            val ctx = obj.optJSONObject("context") ?: return getString(R.string.context_incomplete_response)
             val used = ctx.optLong("usedTokens", -1)
             val max = ctx.optLong("maxTokens", -1)
             val usedPct = ctx.optDouble("usedPercent", -1.0)
@@ -846,12 +846,12 @@ class MainActivity : AppCompatActivity() {
 
             "Context actual:\n• Model: $model\n• Ocupat: $used / $max tokens (${if (usedPct >= 0) usedPct else "?"}%)\n• Lliure: $free tokens (${if (freePct >= 0) freePct else "?"}%)"
         } catch (_: Exception) {
-            "No s'ha pogut parsejar l'estat de context"
+            getString(R.string.context_parse_error)
         }
     }
 
     private fun parseAssistantText(body: String, code: Int): String {
-        if (body.isBlank()) return if (code in 200..299) "Missatge enviat ✅" else "Error HTTP $code"
+        if (body.isBlank()) return if (code in 200..299) getString(R.string.message_sent_ok) else getString(R.string.error_http_code, code)
         return try {
             val obj = JSONObject(body)
             val core = when {
@@ -860,11 +860,11 @@ class MainActivity : AppCompatActivity() {
                 obj.has("message") -> obj.optString("message")
                 obj.has("text") -> obj.optString("text")
                 obj.has("ok") && !obj.optBoolean("ok", false) -> {
-                    val err = obj.optString("error", "error desconegut")
+                    val err = obj.optString("error", getString(R.string.unknown_error))
                     val details = obj.optString("details", "")
-                    "Error bridge: $err${if (details.isNotBlank()) "\n$details" else ""}"
+                    getString(R.string.bridge_error, err, details)
                 }
-                obj.has("ok") -> "Missatge enviat ✅"
+                obj.has("ok") -> getString(R.string.message_sent_ok)
                 else -> body
             }
             core
@@ -877,14 +877,14 @@ class MainActivity : AppCompatActivity() {
         val inline = Regex("\\[\\[tts:(.+?)\\]\\]", RegexOption.DOT_MATCHES_ALL).find(text)
         if (inline != null) {
             val ttsText = inline.groupValues[1].trim()
-            val cleaned = text.replace(inline.value, "").trim().ifBlank { "Resposta de text rebuda." }
+            val cleaned = text.replace(inline.value, "").trim().ifBlank { getString(R.string.text_response_received) }
             return cleaned to ttsText
         }
 
         val block = Regex("\\[\\[tts:text\\]\\](.+?)\\[\\[/tts:text\\]\\]", RegexOption.DOT_MATCHES_ALL).find(text)
         if (block != null) {
             val ttsText = block.groupValues[1].trim()
-            val cleaned = text.replace(block.value, "").trim().ifBlank { "Resposta de text rebuda." }
+            val cleaned = text.replace(block.value, "").trim().ifBlank { getString(R.string.text_response_received) }
             return cleaned to ttsText
         }
 
@@ -899,16 +899,16 @@ class MainActivity : AppCompatActivity() {
 
         val info = buildString {
             appendLine("AIGOR App")
-            appendLine("Versió: $versionName ($versionCode)")
-            appendLine("Bridge: OpenClaw /chat + /status")
-            appendLine("Funcions: xat, context, adjunts (imatge/vídeo/àudio)")
+            appendLine(getString(R.string.about_version, versionName, versionCode))
+            appendLine(getString(R.string.about_bridge))
+            appendLine(getString(R.string.about_features))
             appendLine("")
-            appendLine("Repo: aigor-app")
+            appendLine(getString(R.string.about_repo))
         }
         AlertDialog.Builder(this)
-            .setTitle("Quant a")
+            .setTitle(getString(R.string.menu_about))
             .setMessage(info)
-            .setPositiveButton("Tancar", null)
+            .setPositiveButton(getString(R.string.close), null)
             .show()
     }
 
