@@ -63,6 +63,8 @@ Script: `scripts/aigor_chat_bridge.py`
 - `POST /chat`
 - `GET /status`
 - `GET /media/<file>`
+- `GET /e2ee/status` (phase 2)
+- `GET /e2ee/prekey-bundle` (phase 2 bootstrap)
 
 Recommended environment variables:
 - `AIGOR_BRIDGE_HOST`
