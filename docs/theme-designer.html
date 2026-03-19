@@ -3,86 +3,196 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Theme Designer - AIGOR App</title>
+  <title>AIGOR Theme Designer (UI real)</title>
   <style>
     :root{
-      --bg:#0f172a;--panel:#111827;--assistant:#1f2937;--user:#2563eb;--text:#e5e7eb;--muted:#9ca3af;--accent:#38bdf8;
+      --screen-bg:#0B1018;
+      --toolbar-bg:#0B1018;
+      --title:#F3F4F6;
+      --status:#7C879A;
+      --menu:#E5E7EB;
+
+      --bot-bubble:#242833;
+      --user-bubble:#34242B;
+      --bubble-text:#F9FAFB;
+
+      --audio-wave:#9CB9D5;
+      --audio-time:#C7D2E0;
+      --audio-caption:#E5E7EB;
+      --audio-transcript-bg:#1F2937;
+
+      --input-bg:#101623;
+      --input-stroke:#20283A;
+      --input-focus:#FF5C5C;
+      --input-text:#F9FAFB;
+      --input-hint:#7C879A;
+
+      --send-bg:#FF5C5C;
+      --send-icon:#FFFFFF;
+      --mic-bg:#FF5C5C;
+      --mic-icon:#FFFFFF;
     }
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui;background:var(--bg);color:var(--text)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;background:#070b12;color:#e5e7eb}
     .wrap{display:grid;grid-template-columns:1.2fr .8fr;min-height:100vh}
-    .chat{padding:20px;display:flex;flex-direction:column;gap:10px}
-    .phone{max-width:460px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
-    .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
-    .msg{max-width:82%;padding:10px 12px;border-radius:14px;line-height:1.35}
-    .a{background:var(--assistant)} .u{background:var(--user);margin-left:auto}
-    .input{margin-top:12px;background:var(--panel);padding:10px;border-radius:12px;display:flex;justify-content:space-between;color:var(--muted)}
-    .controls{padding:20px;background:#0b1220;border-left:1px solid rgba(255,255,255,.1)}
-    .card{background:var(--panel);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);margin-bottom:12px}
-    label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
-    input,select,button,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:var(--text)}
-    button{cursor:pointer;background:var(--accent);color:#00131d;border:none;font-weight:600}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    textarea{height:140px;font-family:ui-monospace,monospace}
+
+    .left{padding:16px 20px}
+    .phone{
+      width:420px;max-width:100%;height:820px;background:var(--screen-bg);border-radius:22px;
+      border:1px solid rgba(255,255,255,.1);overflow:hidden;display:flex;flex-direction:column;
+      box-shadow:0 20px 60px rgba(0,0,0,.45);
+    }
+    .toolbar{height:56px;background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+    .title{color:var(--title);font-size:38px;letter-spacing:.5px;font-weight:300;line-height:1}
+    .dots{color:var(--menu);font-size:28px;line-height:1}
+
+    .chat{flex:1;padding:8px 10px;overflow:auto}
+    .row{display:flex;margin:6px 0}
+    .row.user{justify-content:flex-end}
+    .bubble{border-radius:18px;padding:10px 12px;max-width:82%}
+    .bubble.bot{background:var(--bot-bubble)}
+    .bubble.user{background:var(--user-bubble)}
+    .txt{font-size:18px;color:var(--bubble-text);line-height:1.35}
+
+    .audio .top{display:flex;align-items:center;gap:10px}
+    .play{width:22px;height:22px;display:grid;place-items:center;color:var(--bubble-text);font-size:16px}
+    .wave{height:8px;flex:1;border-radius:10px;background:repeating-linear-gradient(90deg,var(--audio-wave) 0 4px,transparent 4px 7px);opacity:.85}
+    .dur{color:var(--audio-time);font-size:18px;min-width:44px;text-align:right}
+    .act{color:var(--audio-time);font-size:28px;line-height:1}
+    .cap{margin-top:8px;color:var(--audio-caption);font-size:36px;font-weight:300;line-height:1.15}
+    .trans{margin-top:8px;background:var(--audio-transcript-bg);border-radius:8px;padding:8px;color:var(--audio-caption);font-size:15px;line-height:1.3}
+
+    .imgbox{margin-top:8px;border-radius:14px;overflow:hidden;background:#111}
+    .imgbox img{display:block;width:100%;height:auto;max-height:260px;object-fit:cover;filter:grayscale(1)}
+    .imgname{padding:8px 10px;color:var(--audio-caption);font-size:16px}
+
+    .status{padding:0 12px 6px;color:var(--status);font-size:12px}
+
+    .composerWrap{padding:8px}
+    .composer{display:flex;align-items:center;gap:8px}
+    .input{
+      flex:1;background:var(--input-bg);border:1px solid var(--input-stroke);border-radius:18px;
+      min-height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 14px
+    }
+    .hint{color:var(--input-hint);font-size:17px}
+    .ico{font-size:22px;color:var(--send-bg);margin-left:10px}
+    .round{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:22px}
+    .round.send{background:var(--send-bg);color:var(--send-icon)}
+    .round.mic{background:var(--mic-bg);color:var(--mic-icon)}
+
+    .right{padding:16px;background:#0b1220;border-left:1px solid rgba(255,255,255,.12);overflow:auto}
+    .card{background:#111827;border:1px solid #243041;border-radius:12px;padding:12px;margin-bottom:12px}
+    h3{margin:0 0 8px;font-size:14px;color:#cbd5e1}
+    label{display:block;font-size:12px;color:#94a3b8;margin:8px 0 4px}
+    select,input,button,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    textarea{height:150px;font-family:ui-monospace,monospace}
+    button{cursor:pointer;background:#22c1ff;color:#042133;font-weight:700;border:none}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="chat">
-    <h2>Preview xat (AIGOR App)</h2>
-    <div class="phone" id="phone">
-      <div class="head"><strong>AIGOR</strong><span class="dot"></span></div>
-      <div class="msg a">Hola Oriol 👋 Aquest és un preview del tema.</div>
-      <div class="msg u">Perfecte, vull ajustar colors.</div>
-      <div class="msg a">Canvia els controls de la dreta i veuràs els canvis al moment.</div>
-      <div class="input"><span>Escriu missatge…</span><span>➤</span></div>
+  <div class="left">
+    <h2 style="margin:0 0 10px">Preview realista (basat en la UI actual)</h2>
+    <div class="phone">
+      <div class="toolbar">
+        <div class="title">AIGOR</div>
+        <div class="dots">⋮</div>
+      </div>
+      <div class="chat">
+        <div class="row"><div class="bubble bot"><div class="txt">Rebut, prova correcta ✅</div></div></div>
+
+        <div class="row user"><div class="bubble user audio" style="width:82%">
+          <div class="top"><div class="play">▶</div><div class="wave"></div><div class="dur">0:08</div><div class="act">✎</div></div>
+          <div class="cap">🔗 voice-1773922419161.m4a</div>
+        </div></div>
+
+        <div class="row"><div class="bubble bot audio" style="width:82%">
+          <div class="top"><div class="play">▶</div><div class="wave"></div><div class="dur">0:11</div><div class="act">✕</div></div>
+          <div class="cap">Àudio de resposta</div>
+          <div class="trans">Avui a Barcelona fa catorze graus amb intervals de núvols...</div>
+        </div></div>
+
+        <div class="row user"><div class="bubble user" style="width:82%">
+          <div class="imgbox"><img src="./Aigor-app_ui.jpg" alt="preview"><div class="imgname">🔗 aigir-app.png</div></div>
+        </div></div>
+
+        <div class="row"><div class="bubble bot"><div class="txt">És una imatge en blanc i negre d’un home amb caputxa...</div></div></div>
+      </div>
+
+      <div class="status">Estat: enviat OK (200)</div>
+      <div class="composerWrap">
+        <div class="composer">
+          <div class="input"><span class="hint">Escriu un missatge...</span><span><span class="ico">📎</span><span class="ico">📷</span></span></div>
+          <div class="round mic">🎤</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="controls">
+
+  <div class="right">
     <div class="card">
-      <label>Preset tema</label>
+      <h3>Preset</h3>
       <select id="preset">
-        <option value="dark">Dark Elegant</option>
-        <option value="oled">OLED</option>
-        <option value="blue">Blue Modern</option>
-        <option value="light">Light Clean</option>
+        <option value="darkRed">Fosc vermell (actual)</option>
+        <option value="darkBlue">Fosc blau</option>
+        <option value="light">Clar net</option>
       </select>
-      <div class="row">
-        <div><label>Fons global</label><input type="color" id="bg" value="#0f172a"></div>
-        <div><label>Panell</label><input type="color" id="panel" value="#111827"></div>
+    </div>
+
+    <div class="card">
+      <h3>Colors base</h3>
+      <div class="grid">
+        <div><label>Fons pantalla</label><input type="color" id="screen-bg"></div>
+        <div><label>Toolbar</label><input type="color" id="toolbar-bg"></div>
+        <div><label>Títol</label><input type="color" id="title"></div>
+        <div><label>Status text</label><input type="color" id="status"></div>
+        <div><label>Bot bubble</label><input type="color" id="bot-bubble"></div>
+        <div><label>User bubble</label><input type="color" id="user-bubble"></div>
+        <div><label>Text missatge</label><input type="color" id="bubble-text"></div>
+        <div><label>Wave àudio</label><input type="color" id="audio-wave"></div>
+        <div><label>Temps àudio</label><input type="color" id="audio-time"></div>
+        <div><label>Text àudio</label><input type="color" id="audio-caption"></div>
+        <div><label>Transcript bg</label><input type="color" id="audio-transcript-bg"></div>
+        <div><label>Input bg</label><input type="color" id="input-bg"></div>
+        <div><label>Input stroke</label><input type="color" id="input-stroke"></div>
+        <div><label>Input focus</label><input type="color" id="input-focus"></div>
+        <div><label>Input hint</label><input type="color" id="input-hint"></div>
+        <div><label>Accent icones</label><input type="color" id="send-bg"></div>
       </div>
-      <div class="row">
-        <div><label>Bombolla assistent</label><input type="color" id="assistant" value="#1f2937"></div>
-        <div><label>Bombolla usuari</label><input type="color" id="user" value="#2563eb"></div>
-      </div>
-      <div class="row">
-        <div><label>Text</label><input type="color" id="text" value="#e5e7eb"></div>
-        <div><label>Text secundari</label><input type="color" id="muted" value="#9ca3af"></div>
-      </div>
-      <label>Accent (botons, punts, highlights)</label><input type="color" id="accent" value="#38bdf8">
-      <label style="margin-top:10px">JSON tema generat</label>
+    </div>
+
+    <div class="card">
+      <h3>Export</h3>
+      <label>JSON de tema</label>
       <textarea id="json"></textarea>
-      <button id="approve">✅ Aprovar tema</button>
+      <button id="approve">✅ Aprovar aquest tema</button>
     </div>
   </div>
 </div>
 <script>
-const ids=['bg','panel','assistant','user','text','muted','accent'];
-const presetMap={
-  dark:{bg:'#0f172a',panel:'#111827',assistant:'#1f2937',user:'#2563eb',text:'#e5e7eb',muted:'#9ca3af',accent:'#38bdf8'},
-  oled:{bg:'#000000',panel:'#0b0b0b',assistant:'#171717',user:'#1d4ed8',text:'#f3f4f6',muted:'#a3a3a3',accent:'#22d3ee'},
-  blue:{bg:'#0b1220',panel:'#14213d',assistant:'#1b2a4a',user:'#2563eb',text:'#edf2ff',muted:'#a6b4d0',accent:'#60a5fa'},
-  light:{bg:'#f3f4f6',panel:'#ffffff',assistant:'#e5e7eb',user:'#bfdbfe',text:'#111827',muted:'#4b5563',accent:'#2563eb'}
+const vars=[
+'screen-bg','toolbar-bg','title','status','bot-bubble','user-bubble','bubble-text','audio-wave','audio-time','audio-caption','audio-transcript-bg','input-bg','input-stroke','input-focus','input-hint','send-bg'
+];
+const presets={
+  darkRed:{'screen-bg':'#0B1018','toolbar-bg':'#0B1018','title':'#F3F4F6','status':'#7C879A','bot-bubble':'#242833','user-bubble':'#34242B','bubble-text':'#F9FAFB','audio-wave':'#9CB9D5','audio-time':'#C7D2E0','audio-caption':'#E5E7EB','audio-transcript-bg':'#1F2937','input-bg':'#101623','input-stroke':'#20283A','input-focus':'#FF5C5C','input-hint':'#7C879A','send-bg':'#FF5C5C'},
+  darkBlue:{'screen-bg':'#0B1018','toolbar-bg':'#0B1018','title':'#F3F4F6','status':'#94A3B8','bot-bubble':'#1E293B','user-bubble':'#1D4ED8','bubble-text':'#F8FAFC','audio-wave':'#93C5FD','audio-time':'#BFDBFE','audio-caption':'#E2E8F0','audio-transcript-bg':'#0F172A','input-bg':'#0F172A','input-stroke':'#1E293B','input-focus':'#2563EB','input-hint':'#94A3B8','send-bg':'#2563EB'},
+  light:{'screen-bg':'#F8FAFC','toolbar-bg':'#F8FAFC','title':'#0F172A','status':'#64748B','bot-bubble':'#E2E8F0','user-bubble':'#BFDBFE','bubble-text':'#0F172A','audio-wave':'#475569','audio-time':'#334155','audio-caption':'#0F172A','audio-transcript-bg':'#E2E8F0','input-bg':'#FFFFFF','input-stroke':'#CBD5E1','input-focus':'#2563EB','input-hint':'#64748B','send-bg':'#2563EB'}
 };
 function apply(){
-  const o={}; ids.forEach(id=>{o[id]=document.getElementById(id).value;document.documentElement.style.setProperty('--'+id,o[id]);});
-  const out={theme:o,approved:false,updatedAt:new Date().toISOString()};
+  const out={themeId:preset.value,colors:{},approved:false,updatedAt:new Date().toISOString()};
+  vars.forEach(v=>{const val=document.getElementById(v).value;out.colors[v]=val;document.documentElement.style.setProperty('--'+v,val)});
+  document.documentElement.style.setProperty('--menu',out.colors.title);
+  document.documentElement.style.setProperty('--send-icon','#fff');
+  document.documentElement.style.setProperty('--mic-bg',out.colors['send-bg']);
+  document.documentElement.style.setProperty('--mic-icon','#fff');
   json.value=JSON.stringify(out,null,2);
 }
-ids.forEach(id=>document.getElementById(id).addEventListener('input',apply));
-preset.addEventListener('change',()=>{const p=presetMap[preset.value];ids.forEach(id=>document.getElementById(id).value=p[id]);apply();});
-approve.addEventListener('click',()=>{const data=JSON.parse(json.value);data.approved=true;data.updatedAt=new Date().toISOString();json.value=JSON.stringify(data,null,2);localStorage.setItem('aigor_theme_approved',json.value);alert('Tema aprovat. Envia\'m aquest JSON i l\'aplico a l\'app.');});
-apply();
+function loadPreset(id){const p=presets[id];vars.forEach(v=>document.getElementById(v).value=p[v]);apply();}
+vars.forEach(v=>document.getElementById(v).addEventListener('input',apply));
+preset.addEventListener('change',()=>loadPreset(preset.value));
+approve.addEventListener('click',()=>{const data=JSON.parse(json.value);data.approved=true;data.updatedAt=new Date().toISOString();json.value=JSON.stringify(data,null,2);localStorage.setItem('aigor_theme_approved',json.value);alert('Tema aprovat. Passa\'m aquest JSON i l\'integro a l\'app.');});
+loadPreset('darkRed');
 </script>
 </body>
 </html>
