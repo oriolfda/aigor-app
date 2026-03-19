@@ -98,7 +98,8 @@
       <div class="card">
         <h3>Preset</h3>
         <select id="preset">
-          <option value="darkRed">Fosc vermell (actual)</option>
+          <option value="darkRed">Fosc vermell</option>
+          <option value="darkRed2">Fosc vermell 2</option>
           <option value="darkBlue">Fosc blau</option>
           <option value="light">Clar net</option>
         </select>
@@ -122,6 +123,7 @@ const labels={
 };
 const presets={
   darkRed:{'screen-bg':'#0B1018','toolbar-bg':'#0B1018','title':'#F3F4F6','status':'#7C879A','bot-bubble':'#242833','user-bubble':'#34242B','bubble-text':'#F9FAFB','audio-wave':'#9CB9D5','audio-time':'#C7D2E0','audio-caption':'#E5E7EB','audio-transcript-bg':'#1F2937','input-bg':'#101623','input-stroke':'#20283A','input-focus':'#FF5C5C','input-hint':'#7C879A','send-bg':'#FF5C5C'},
+  darkRed2:{'screen-bg':'#0b1018','toolbar-bg':'#0b1018','title':'#f3f4f6','status':'#7c879a','bot-bubble':'#000000','user-bubble':'#34242b','bubble-text':'#f9fafb','audio-wave':'#9cb9d5','audio-time':'#c7d2e0','audio-caption':'#e5e7eb','audio-transcript-bg':'#1f1f1f','input-bg':'#101623','input-stroke':'#20283a','input-focus':'#ff5c5c','input-hint':'#7c879a','send-bg':'#ff5c5c'},
   darkBlue:{'screen-bg':'#0B1018','toolbar-bg':'#0B1018','title':'#F3F4F6','status':'#94A3B8','bot-bubble':'#1E293B','user-bubble':'#1D4ED8','bubble-text':'#F8FAFC','audio-wave':'#93C5FD','audio-time':'#BFDBFE','audio-caption':'#E2E8F0','audio-transcript-bg':'#0F172A','input-bg':'#0F172A','input-stroke':'#1E293B','input-focus':'#2563EB','input-hint':'#94A3B8','send-bg':'#2563EB'},
   light:{'screen-bg':'#F8FAFC','toolbar-bg':'#F8FAFC','title':'#0F172A','status':'#64748B','bot-bubble':'#E2E8F0','user-bubble':'#BFDBFE','bubble-text':'#0F172A','audio-wave':'#475569','audio-time':'#334155','audio-caption':'#0F172A','audio-transcript-bg':'#E2E8F0','input-bg':'#FFFFFF','input-stroke':'#CBD5E1','input-focus':'#2563EB','input-hint':'#64748B','send-bg':'#2563EB'}
 };
@@ -133,7 +135,7 @@ vars.forEach(v=>document.addEventListener('input',e=>{if(e.target.id===v)apply()
 preset.addEventListener('change',()=>loadPreset(preset.value));
 approve.addEventListener('click',()=>{const data=JSON.parse(json.value);data.approved=true;data.updatedAt=new Date().toISOString();json.value=JSON.stringify(data,null,2);localStorage.setItem('aigor_theme_approved',json.value);alert('Tema aprovat. Passa\'m aquest JSON i l\'aplico a l\'app.')});
 document.getElementById('togglePanel').addEventListener('click',()=>{const p=document.getElementById('panel');p.style.display=(p.style.display==='none'?'block':'none')});
-loadPreset('darkRed');
+loadPreset('darkRed2');
 if(window.matchMedia('(max-width:980px)').matches){document.getElementById('panel').style.display='none'}
 </script>
 </body>
