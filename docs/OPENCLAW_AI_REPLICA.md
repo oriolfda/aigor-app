@@ -1,16 +1,37 @@
 # OpenClaw AI Replica Guide
 
-Guia per a un assistent OpenClaw que hagi de replicar/personalitzar aquesta app per al seu humà.
+This guide is for an OpenClaw assistant that needs to replicate/customize this app for a human user.
 
-## 1) Requisits host
+> AI-facing instructions are intentionally written in English so any human reviewer can audit them easily.
+
+## 0) Interactive intake (ask first, then implement)
+Before changing code, ask the human for the required inputs in a short checklist format and wait for answers.
+
+Minimum intake fields:
+1. App name
+2. App icon (path/file)
+3. Default UI locale
+4. Color theme preference
+5. Bridge endpoint + token
+6. Audio preferences:
+   - STT transcription visible in chat? (yes/no)
+   - TTS enabled for assistant replies? (yes/no)
+   - Preferred TTS voice(s) by language
+7. Deployment preference:
+   - Local LAN only, or internet-accessible?
+   - If internet-accessible: domain/subdomain plan (DuckDNS/custom domain), reverse proxy choice (e.g., nginx), TLS plan.
+
+If data is missing, ask follow-up questions interactively instead of guessing.
+
+## 1) Host requirements
 - Linux
 - Java 17
 - Android SDK CLI
-- OpenClaw CLI operatiu
+- OpenClaw CLI available
 - Python 3
-- (Opcional) edge-tts per respostes d'àudio
+- (Optional) `edge-tts` for server-side spoken replies
 
-## 2) Setup Android
+## 2) Android setup
 ```bash
 sudo apt-get update
 sudo apt-get install -y openjdk-17-jdk unzip
@@ -41,7 +62,7 @@ Script: `scripts/aigor_chat_bridge.py`
 - `GET /status`
 - `GET /media/<file>`
 
-Variables recomanades:
+Recommended environment variables:
 - `AIGOR_BRIDGE_HOST`
 - `AIGOR_BRIDGE_PORT`
 - `AIGOR_BRIDGE_TOKEN`
@@ -49,22 +70,51 @@ Variables recomanades:
 - `AIGOR_BRIDGE_MEDIA_DIR`
 - `AIGOR_BRIDGE_EDGE_TTS`
 
-## 5) TTS (opcional)
-```bash
-python3 -m venv ~/.openclaw/venvs/aigor-tts
-~/.openclaw/venvs/aigor-tts/bin/pip install --upgrade pip
-~/.openclaw/venvs/aigor-tts/bin/pip install edge-tts
-```
+## 5) Token keystore (critical)
+For release signing, the Android keystore is mandatory.
 
-## 6) Personalització
-- Nom: `app_name` a `strings.xml`
-- Tema: `ThemeManager.kt` + drawables
-- Icona: recursos launcher
-- Idiomes UI: `values-xx-rYY/strings.xml`
+- `keystore.properties` and `.jks` hold signing credentials.
+- Without the original keystore, you cannot ship updates to already-installed packages under the same app id/signature.
+- If the keystore is lost, migration usually requires publishing a new app identity.
+- Do not commit private keystore passwords in public repos.
+- Keep secure backups of keystore material before distribution.
 
-## 7) Validació
-- text ok
-- imatge/vídeo ok
-- àudio enviar/reproduir ok
-- estat context ok
-- canvi tema i idioma UI ok
+## 6) TTS/STT guidance
+### STT transcription
+- If enabled, display transcript text in chat for transparency/debugging.
+- If disabled, keep voice-input UX minimal and privacy-oriented.
+
+### TTS enablement
+- Honor human-selected voice per language.
+- If no voice is selected for a language, apply a documented fallback voice.
+- Keep pronunciation settings/versioned presets explicit.
+
+### Choosing a good TTS voice (human-facing advice)
+Recommend the human test 3-5 voices and compare:
+1. Naturalness (not robotic)
+2. Clarity at normal speed
+3. Pronunciation quality in target language
+4. Fatigue over long listening sessions
+5. Latency/response speed
+
+## 7) Internet exposure (optional)
+If the human wants to use the app from anywhere (not only LAN):
+- Use a domain/subdomain pointing to the bridge public IP.
+- A free baseline is DuckDNS + nginx reverse proxy.
+- Add HTTPS/TLS before exposing production traffic.
+- Validate token auth remains active at all layers.
+
+## 8) Personalization
+- Name: `app_name` in `strings.xml`
+- Theme: `ThemeManager.kt` + drawables
+- Icon: launcher resources
+- UI locales: `values-xx-rYY/strings.xml`
+
+## 9) Validation checklist
+- text chat works
+- image/video upload works
+- audio send/playback works
+- context/status updates work
+- selected theme and UI locale work
+- STT/TTS behavior matches human preferences
+- remote access config (if enabled) works with domain + TLS

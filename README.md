@@ -13,13 +13,22 @@ Aquest repositori està pensat perquè qualsevol persona (encara que no sigui t�
 ## Què has de fer TU (com a humà)
 
 ### Pas 1 — Decideix com vols la teva app
-Abans de res, pensa aquestes 5 coses:
+Abans de res, pensa aquests punts:
 
 - **Nom de l’app** (ex: “Aina Assistant”)
 - **Icona** (png quadrat, idealment 1024x1024)
 - **Idioma d’interfície per defecte**
 - **Tema de colors** (fosc vermell, blau, verd, clar...)
-- **Com vols l’àudio** (si vols transcripció visible o no)
+- **Àudio**:
+  - si vols **transcripció STT** visible al xat
+  - si vols **TTS** per les respostes
+  - quina **veu TTS** prefereixes (val la pena provar-ne 3-5 i triar per claredat + naturalitat)
+- **Com publicar-la si la vols usar arreu** (fora de la LAN):
+  - domini/subdomini cap a la IP pública de la teva app
+  - exemple gratuït: **DuckDNS + nginx**
+- **Signatura Android (keystore/token)**:
+  - és clau per poder desplegar actualitzacions de la mateixa app
+  - guarda credencials i fitxers de signatura de forma segura
 
 ### Pas 2 — Dona aquest repo al teu assistent OpenClaw
 Passa-li l’enllaç del teu fork (o d’aquest repo) i digues-li:
@@ -40,9 +49,10 @@ Quan l’assistent et passi l’APK:
 
 El teu assistent (no tu manualment) farà:
 
+- recollida **interactiva** de la informació necessària (nom, icona, idioma, tema, STT/TTS, etc.)
 - instal·lació de requisits Android (JDK/SDK)
 - configuració del bridge OpenClaw
-- configuració opcional de TTS servidor
+- configuració de STT/TTS segons preferències humanes (incloent veus triades)
 - compilació APK release
 - personalització (marca, tema, idioma)
 - validació funcional
