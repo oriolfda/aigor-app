@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Locale
+import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 class ChatAdapter(
@@ -31,6 +32,8 @@ class ChatAdapter(
     private var showTranscriptionOption: Boolean = false
     private val durationCache = mutableMapOf<Long, String>()
     private val durationLoading = mutableSetOf<Long>()
+    private val playbackProgress = mutableMapOf<Long, Float>()
+    private val waveRefs = mutableMapOf<Long, WeakReference<AudioWaveProgressView>>()
 
     companion object {
         private const val VIEW_USER = 1
@@ -193,8 +196,9 @@ class ChatAdapter(
                 holder.play.setImageResource(playIcon)
                 holder.play.setColorFilter(if (item.role == "user") theme.userText else theme.botText)
                 holder.play.setOnClickListener { onMessageClick?.invoke(item) }
-                holder.wave.setColors(theme.messageHintColor, theme.messageHintColor)
-                holder.wave.setProgress(0f)
+                holder.wave.setColors(theme.messageHintColor, theme.sendTint)
+                holder.wave.setProgress(playbackProgress[item.ts] ?: 0f)
+                waveRefs[item.ts] = WeakReference(holder.wave)
                 holder.wave.alpha = 1f
 
                 holder.caption.text = if (item.text.isBlank()) "Àudio" else item.text
@@ -316,11 +320,19 @@ class ChatAdapter(
     }
 
     fun setPlaybackProgress(ts: Long?, progress: Float) {
-        // No-op to avoid item rebind flicker during playback updates.
+        if (ts == null) return
+        val p = progress.coerceIn(0f, 1f)
+        playbackProgress[ts] = p
+        val ref = waveRefs[ts]?.get()
+        if (ref != null) {
+            ref.setProgress(p)
+        }
     }
 
     fun resetPlaybackProgress(ts: Long?) {
-        // No-op.
+        if (ts == null) return
+        playbackProgress.remove(ts)
+        waveRefs[ts]?.get()?.setProgress(0f)
     }
 
     fun setShowTranscriptionOption(enabled: Boolean) {
