@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 09:24 UTC
+Last updated: 2026-03-20 09:37 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -19,7 +19,7 @@ Branch: `feature/signal-e2ee-phase2`
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~85%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
-9. Final tests/validation — IN PROGRESS (~90%)
+9. Final tests/validation — IN PROGRESS (~94%)
 
 ## Pending tasks (next exact order)
 1) Finish inbound decrypt path to prioritize and advance `recvChainSeed` state per message.
@@ -58,6 +58,7 @@ Branch: `feature/signal-e2ee-phase2`
 - reminder resume (09:07 UTC): added repeatable encrypted-attachment smoke script `scripts/e2ee_attachment_smoke.py`; run PASS => `{"ok": true, "name": "sample.txt", "mime": "text/plain", "bytes": 49}` (both bridges).
 - reminder re-run (09:12 UTC): full smoke quad PASS on both bridges — `e2ee_headerid_smoke.py` => `T,T,F,T,F`; `e2ee_seed_progress_smoke.py` => `{"ok": true, "outCounters": [1,2], "recvChainCounter": 2, "sendChainCounter": 2}`; `e2ee_strict_mode_smoke.py` => all 3 strict cases PASS; `e2ee_attachment_smoke.py` => `{"ok": true, "name": "sample.txt", "mime": "text/plain", "bytes": 49}`.
 - reminder resume (09:24 UTC): added repeatable wrapper `scripts/e2ee_full_matrix_smoke.py` to execute full quad in one shot; run PASS on both bridges (`ok=true` + all 4 subtests PASS).
+- reminder re-run (09:37 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 3/3 PASS`, `attachment PASS`).
 
 ## Resume checklist
 - Confirm branch: `feature/signal-e2ee-phase2`
