@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 05:33 UTC
+Last updated: 2026-03-20 05:38 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -19,7 +19,7 @@ Branch: `feature/signal-e2ee-phase2`
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~75%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
-9. Final tests/validation — IN PROGRESS (~65%)
+9. Final tests/validation — IN PROGRESS (~70%)
 
 ## Pending tasks (next exact order)
 1) Finish inbound decrypt path to prioritize and advance `recvChainSeed` state per message.
@@ -33,11 +33,12 @@ Branch: `feature/signal-e2ee-phase2`
    - restart persistence continuity
    - attachment encrypted path
 
-## Test evidence (2026-03-20 05:08 UTC)
+## Test evidence (2026-03-20 05:38 UTC)
 - replay/out-of-order window check (`_ratchet_check_and_advance`) seq `1,3,2,3,4,2` => `T,T,T,F,T,F` (both bridges)
 - restart continuity check => `counter1=True`, restart, `counter2=True`, replay `counter2=False`
 - encrypted attachment decrypt path (`decrypt_e2ee_attachment`) => PASS
 - headerId-isolated skipped validation check (`A1,A3,B2,A2`) => `T,T,F,T` (both bridges, no cross-header acceptance)
+- repeatable smoke script `scripts/e2ee_headerid_smoke.py` sequence `A1,A3,B2,A2,A2(replay)` => `T,T,F,T,F` (both bridges)
 
 ## Resume checklist
 - Confirm branch: `feature/signal-e2ee-phase2`
