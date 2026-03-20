@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 06:33 UTC
+Last updated: 2026-03-20 06:44 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -42,6 +42,7 @@ Branch: `feature/signal-e2ee-phase2`
 - repeatable seed-persistence smoke script `scripts/e2ee_seed_progress_smoke.py` => `ok=true`, out counters `1,2`, recv/send chain counters `2,2` (both bridges)
 - re-run smoke at 06:33 UTC: `e2ee_headerid_smoke.py` => `T,T,F,T,F`; `e2ee_seed_progress_smoke.py` => `ok=true` (both bridges)
 - Android build check: `openclaw-app ./gradlew :app:assembleDebug` => BUILD SUCCESSFUL; `aigor-app ./gradlew :app:assembleRelease` => BUILD SUCCESSFUL
+- recv-seed priority mix check (06:44 UTC): persistent `recvChainSeed` mixed before inbound per-message ratchet; smoke re-run OK (`e2ee_headerid_smoke.py` => `T,T,F,T,F`, `e2ee_seed_progress_smoke.py` => `ok=true`)
 
 ## Resume checklist
 - Confirm branch: `feature/signal-e2ee-phase2`

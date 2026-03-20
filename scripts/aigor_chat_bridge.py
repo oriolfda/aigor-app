@@ -506,7 +506,12 @@ def decrypt_real_envelope(env: dict, session_id: str):
     sessions = store.setdefault("sessions", {})
     st = _ensure_session_chains(sessions.setdefault(session_id, {}))
     st["recv"]["currentHeaderId"] = header_id
-    if not st.get("recvChainSeed"):
+    recv_seed_b64 = st.get("recvChainSeed", "")
+    if recv_seed_b64:
+        import hashlib
+        recv_seed = base64.b64decode(recv_seed_b64)
+        base_key = hashlib.sha256(recv_seed + base_key + b"recv-priority").digest()
+    else:
         st["recvChainSeed"] = base64.b64encode(base_key).decode("ascii")
     _save_ratchet_store(store)
 
