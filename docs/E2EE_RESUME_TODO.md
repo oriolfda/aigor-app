@@ -18,7 +18,7 @@ Branch: `feature/signal-e2ee-phase2`
 5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~35%)
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~60%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
-8. Strict checks/fallback policy — IN PROGRESS (~35%)
+8. Strict checks/fallback policy — IN PROGRESS (~70%)
 9. Final tests/validation — PENDING
 
 ## Pending tasks (next exact order)
