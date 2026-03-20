@@ -74,6 +74,9 @@
             android:padding="8dp"
             android:textColor="#E5E7EB"
             android:textSize="13sp"
+            android:inputType="textMultiLine"
+            android:maxLines="40"
+            android:scrollbars="vertical"
             android:visibility="gone" />
 
     </LinearLayout>
