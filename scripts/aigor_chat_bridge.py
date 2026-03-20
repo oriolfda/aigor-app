@@ -476,6 +476,12 @@ def _ratchet_apply_peer_pub(session_id: str, peer_pub_b64: str, mix_material: by
         step += 1
         recv["lastPeerRatchetPub"] = peer_pub_b64
         recv["ratchetStep"] = step
+
+        # Controlled re-seed on DH ratchet change: drop recv chain seed/counter so
+        # next inbound messages are derived from the new ratchet material only.
+        st["recvChainSeed"] = ""
+        recv["chainCounter"] = 0
+
         if mix_material:
             import hashlib
             root_prev = base64.b64decode(st.get("rootKeySeed", "")) if st.get("rootKeySeed", "") else b""
