@@ -286,6 +286,18 @@ def _ratchet_compact_recv_state(recv: dict, floor: int):
     recv["seenIn"] = sorted(c for c in seen if c >= floor)
     recv["skippedIn"] = sorted(c for c in skipped if c >= floor and c not in seen)
 
+    # Keep header-scoped skipped cache bounded to the same replay window and
+    # remove entries already consumed/seen.
+    raw = recv.get("skippedByHeader", {})
+    by_header = raw if isinstance(raw, dict) else {}
+    compact = {}
+    for hid, counters in by_header.items():
+        vals = set(int(x) for x in (counters or []) if isinstance(x, int) or str(x).isdigit())
+        kept = sorted(c for c in vals if c >= floor and c not in seen)
+        if kept:
+            compact[str(hid)] = kept
+    recv["skippedByHeader"] = compact
+
 
 def _ratchet_check_and_advance(session_id: str, inbound_counter: int, header_id: str = "default", window: int = 64) -> bool:
     store = _load_ratchet_store()
