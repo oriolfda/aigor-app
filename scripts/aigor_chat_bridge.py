@@ -836,6 +836,14 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
         message = (data.get("message") or "").strip()
+        if e2ee_req and e2ee_req.get("ciphertext") and not str(e2ee_req.get("headerId", "")).strip():
+            self._send(400, {
+                "ok": False,
+                "error": "e2ee_header_required",
+                "message": "Encrypted envelope requires headerId."
+            })
+            return
+
         if e2ee_req and (not message) and e2ee_req.get("ciphertext"):
             try:
                 inbound_counter = int(e2ee_req.get("counter", 0))

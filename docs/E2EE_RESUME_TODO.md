@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 10:22 UTC
+Last updated: 2026-03-20 10:28 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -75,3 +75,4 @@ Branch: `feature/signal-e2ee-phase2`
 - Remaining for block completion: ~2.5h to 4h
 - Production hardening after that: +1 day
 - reminder re-run (10:22 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 3/3 PASS`, `attachment PASS`).
+- reminder resume (10:27 UTC): strict-mode hardening adds required `headerId` for encrypted envelopes (`e2ee_header_required`); updated `e2ee_strict_mode_smoke.py` now checks 4/4 strict cases (`missing_e2ee`, `missing_ciphertext`, `missing_header`, `clear_attachment`) and full matrix re-run PASS on both bridges.

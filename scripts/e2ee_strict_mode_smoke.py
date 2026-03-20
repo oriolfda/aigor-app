@@ -102,17 +102,21 @@ def main():
         c2 = post(url, token, {"sessionId": "smoke", "message": "hola", "e2ee": {}})
         cases.append(("missing_ciphertext", c2[0] == 400 and c2[1].get("error") == "e2ee_ciphertext_required", c2))
 
-        # 3) clear attachment without e2eeAttachment
-        c3 = post(
+        # 3) encrypted envelope missing headerId
+        c3 = post(url, token, {"sessionId": "smoke", "e2ee": {"ciphertext": "x"}})
+        cases.append(("missing_header", c3[0] == 400 and c3[1].get("error") == "e2ee_header_required", c3))
+
+        # 4) clear attachment without e2eeAttachment
+        c4 = post(
             url,
             token,
             {
                 "sessionId": "smoke",
-                "e2ee": {"ciphertext": "x"},
+                "e2ee": {"ciphertext": "x", "headerId": "h-1"},
                 "attachment": {"name": "a.txt", "mime": "text/plain", "dataBase64": "YQ=="},
             },
         )
-        cases.append(("clear_attachment", c3[0] == 400 and c3[1].get("error") == "e2ee_attachment_required", c3))
+        cases.append(("clear_attachment", c4[0] == 400 and c4[1].get("error") == "e2ee_attachment_required", c4))
 
         ok = all(x[1] for x in cases)
         out = {
