@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 04:52 UTC
+Last updated: 2026-03-20 05:04 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -18,7 +18,7 @@ Branch: `feature/signal-e2ee-phase2`
 5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~35%)
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~60%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
-8. Strict checks/fallback policy — IN PROGRESS (~70%)
+8. Strict checks/fallback policy — DONE (100%)
 9. Final tests/validation — PENDING
 
 ## Pending tasks (next exact order)
@@ -26,8 +26,8 @@ Branch: `feature/signal-e2ee-phase2`
 2) Finish outbound reply encryption to prioritize and advance `sendChainSeed` state per message.
 3) Complete DH ratchet root-key update lifecycle and controlled re-seeding.
 4) Finish headerId+counter skipped-key retrieval/consumption path (not only storage).
-5) Add strict checks (`E2EE_REQUIRED` hard fail on any plaintext path).
-6) Run final test matrix:
+5) Run final test matrix:
+   - strict-mode plaintext rejection (`e2ee_required` / `e2ee_ciphertext_required` / `e2ee_attachment_required`)
    - replay reject
    - out-of-order within window
    - restart persistence continuity
