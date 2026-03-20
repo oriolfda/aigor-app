@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 06:44 UTC
+Last updated: 2026-03-20 06:53 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -13,7 +13,7 @@ Branch: `feature/signal-e2ee-phase2`
 ## Real progress snapshot (recalculated)
 1. Persistent DR session state model — DONE (100%)
 2. Inbound decrypt using persistent `recvChainSeed` — IN PROGRESS (~45%)
-3. Reply encrypt using persistent `sendChainSeed` — IN PROGRESS (~40%)
+3. Reply encrypt using persistent `sendChainSeed` — IN PROGRESS (~62%)
 4. Per-message chain advancement — IN PROGRESS (~45%)
 5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~35%)
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~85%)

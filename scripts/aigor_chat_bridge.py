@@ -937,6 +937,20 @@ class Handler(BaseHTTPRequestHandler):
 
             if e2ee_req and encrypted_reply and reply_key is not None:
                 out_counter = _ratchet_next_out_counter(session_id)
+
+                # Prioritize persistent send chain seed when present.
+                store = _load_ratchet_store()
+                sessions = store.setdefault("sessions", {})
+                st = _ensure_session_chains(sessions.setdefault(session_id, {}))
+                send_seed_b64 = st.get("sendChainSeed", "")
+                if send_seed_b64:
+                    import hashlib
+                    send_seed = base64.b64decode(send_seed_b64)
+                    reply_key = hashlib.sha256(send_seed + reply_key + b"send-priority").digest()
+                else:
+                    st["sendChainSeed"] = base64.b64encode(reply_key).decode("ascii")
+                _save_ratchet_store(store)
+
                 reply_key = _ratchet_mix_chain_key(session_id, reply_key, "s2c", out_counter)
                 send_chain_key = _derive_chain_key(reply_key, "send")
                 msg_key = _derive_message_key(send_chain_key, out_counter, "s2c")
