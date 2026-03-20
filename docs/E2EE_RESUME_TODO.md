@@ -19,7 +19,7 @@ Branch: `feature/signal-e2ee-phase2`
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~85%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
-9. Final tests/validation — IN PROGRESS (~95%)
+9. Final tests/validation — IN PROGRESS (~96%)
 
 ## Pending tasks (next exact order)
 1) Finish inbound decrypt path to prioritize and advance `recvChainSeed` state per message.
@@ -76,3 +76,5 @@ Branch: `feature/signal-e2ee-phase2`
 - Production hardening after that: +1 day
 - reminder re-run (10:22 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 3/3 PASS`, `attachment PASS`).
 - reminder resume (10:27 UTC): strict-mode hardening adds required `headerId` for encrypted envelopes (`e2ee_header_required`); updated `e2ee_strict_mode_smoke.py` now checks 4/4 strict cases (`missing_e2ee`, `missing_ciphertext`, `missing_header`, `clear_attachment`) and full matrix re-run PASS on both bridges.
+
+- reminder re-run (10:32 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 4/4 PASS`, `attachment PASS`).
