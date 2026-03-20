@@ -780,6 +780,23 @@ class Handler(BaseHTTPRequestHandler):
         inbound_counter = 0
         session_id = (data.get("sessionId") or DEFAULT_SESSION).strip() or DEFAULT_SESSION
 
+        if E2EE_REQUIRED:
+            has_ciphertext = bool(e2ee_req and e2ee_req.get("ciphertext"))
+            if not has_ciphertext:
+                self._send(400, {
+                    "ok": False,
+                    "error": "e2ee_ciphertext_required",
+                    "message": "Server requires encrypted message body (no plaintext fallback)."
+                })
+                return
+            if isinstance(data.get("attachment"), dict) and not isinstance(data.get("e2eeAttachment"), dict):
+                self._send(400, {
+                    "ok": False,
+                    "error": "e2ee_attachment_required",
+                    "message": "Server requires encrypted attachment envelope in strict mode."
+                })
+                return
+
         message = (data.get("message") or "").strip()
         if e2ee_req and (not message) and e2ee_req.get("ciphertext"):
             try:
