@@ -59,6 +59,7 @@ Branch: `feature/signal-e2ee-phase2`
 - reminder re-run (09:12 UTC): full smoke quad PASS on both bridges — `e2ee_headerid_smoke.py` => `T,T,F,T,F`; `e2ee_seed_progress_smoke.py` => `{"ok": true, "outCounters": [1,2], "recvChainCounter": 2, "sendChainCounter": 2}`; `e2ee_strict_mode_smoke.py` => all 3 strict cases PASS; `e2ee_attachment_smoke.py` => `{"ok": true, "name": "sample.txt", "mime": "text/plain", "bytes": 49}`.
 - reminder resume (09:24 UTC): added repeatable wrapper `scripts/e2ee_full_matrix_smoke.py` to execute full quad in one shot; run PASS on both bridges (`ok=true` + all 4 subtests PASS).
 - reminder re-run (09:37 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 3/3 PASS`, `attachment PASS`).
+- reminder re-run (09:52 UTC): `e2ee_full_matrix_smoke.py` PASS on both bridges; all 4 subtests PASS (`header=T,T,F,T,F`, `seed ok=true`, `strict-mode 3/3 PASS`, `attachment PASS`).
 
 ## Resume checklist
 - Confirm branch: `feature/signal-e2ee-phase2`
