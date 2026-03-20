@@ -1,6 +1,6 @@
 # E2EE Resume TODO (safe stop point)
 
-Last updated: 2026-03-20 05:28 UTC
+Last updated: 2026-03-20 05:33 UTC
 Branch: `feature/signal-e2ee-phase2`
 
 ## Safe-stop status
@@ -19,7 +19,7 @@ Branch: `feature/signal-e2ee-phase2`
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~75%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
-9. Final tests/validation — IN PROGRESS (~55%)
+9. Final tests/validation — IN PROGRESS (~65%)
 
 ## Pending tasks (next exact order)
 1) Finish inbound decrypt path to prioritize and advance `recvChainSeed` state per message.
