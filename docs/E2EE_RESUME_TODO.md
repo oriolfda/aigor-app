@@ -16,10 +16,10 @@ Branch: `feature/signal-e2ee-phase2`
 3. Reply encrypt using persistent `sendChainSeed` — IN PROGRESS (~40%)
 4. Per-message chain advancement — IN PROGRESS (~45%)
 5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~35%)
-6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~75%)
+6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~85%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
-9. Final tests/validation — IN PROGRESS (~78%)
+9. Final tests/validation — IN PROGRESS (~80%)
 
 ## Pending tasks (next exact order)
 1) Finish inbound decrypt path to prioritize and advance `recvChainSeed` state per message.
