@@ -15,7 +15,7 @@ Branch: `feature/signal-e2ee-phase2`
 2. Inbound decrypt using persistent `recvChainSeed` — IN PROGRESS (~45%)
 3. Reply encrypt using persistent `sendChainSeed` — IN PROGRESS (~62%)
 4. Per-message chain advancement — IN PROGRESS (~45%)
-5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~35%)
+5. DH ratchet step over `rootKeySeed` — IN PROGRESS (~58%)
 6. Header-based skipped cache usable (`headerId+counter`) — IN PROGRESS (~85%)
 7. Persistence/recovery after restart — IN PROGRESS (~55%)
 8. Strict checks/fallback policy — DONE (100%)
@@ -47,6 +47,7 @@ Branch: `feature/signal-e2ee-phase2`
 - reminder-driven re-run (07:02 UTC): `openclaw e2ee_headerid_smoke.py` => `T,T,F,T,F`; `openclaw e2ee_seed_progress_smoke.py` => `ok=True`; `aigor e2ee_seed_progress_smoke.py aigor_chat_bridge.py AIGOR_APP` => `{"ok":true,"outCounters":[1,2],"recvChainCounter":2,"sendChainCounter":2}`
 - reminder re-run (07:22 UTC): `openclaw e2ee_seed_progress_smoke.py` => `{"ok": true, "outCounters": [1, 2], "recvChainCounter": 2, "sendChainCounter": 2}`; `openclaw e2ee_headerid_smoke.py` => `T,T,F,T,F`; `aigor e2ee_seed_progress_smoke.py` => same `ok`; `aigor e2ee_headerid_smoke.py` => `T,T,F,T,F`
 - reminder re-run (07:32 UTC): `openclaw` seed/header smoke => `ok=true` + `T,T,F,T,F`; `aigor` seed/header smoke => `ok=true` + `T,T,F,T,F`; Android build re-check => openclaw Debug OK, aigor Release OK
+- root-seed lifecycle step (07:44 UTC): `_ratchet_mix_chain_key` now mixes previous `rootKeySeed` into per-message derivation and advances `rootKeySeed` every chain step; seed smoke re-run OK (`ok=true`, counters unchanged) on both bridges.
 
 ## Resume checklist
 - Confirm branch: `feature/signal-e2ee-phase2`

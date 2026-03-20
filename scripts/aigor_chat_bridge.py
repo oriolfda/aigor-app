@@ -360,13 +360,21 @@ def _ratchet_mix_chain_key(session_id: str, base_key: bytes, direction: str, cou
 
     prev_b64 = st.get(seed_name, "")
     prev = base64.b64decode(prev_b64) if prev_b64 else base_key
-    mixed = hashlib.sha256(prev + base_key + direction.encode("utf-8") + str(counter).encode("utf-8")).digest()
+
+    root_prev_b64 = st.get("rootKeySeed", "")
+    root_prev = base64.b64decode(root_prev_b64) if root_prev_b64 else hashlib.sha256(base_key + b"root-init").digest()
+
+    mixed = hashlib.sha256(
+        prev + base_key + root_prev + direction.encode("utf-8") + str(counter).encode("utf-8")
+    ).digest()
+
+    root_next = hashlib.sha256(
+        root_prev + mixed + direction.encode("utf-8") + str(counter).encode("utf-8") + b"root-step"
+    ).digest()
 
     st[seed_name] = base64.b64encode(mixed).decode("ascii")
+    st["rootKeySeed"] = base64.b64encode(root_next).decode("ascii")
     chain_box["chainCounter"] = int(chain_box.get("chainCounter", 0)) + 1
-
-    if not st.get("rootKeySeed"):
-        st["rootKeySeed"] = base64.b64encode(hashlib.sha256(base_key + b"root").digest()).decode("ascii")
 
     _save_ratchet_store(store)
     return mixed
