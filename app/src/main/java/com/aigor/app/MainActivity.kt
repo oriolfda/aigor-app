@@ -785,7 +785,7 @@ class MainActivity : AppCompatActivity() {
         sendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
         sendButton.setColorFilter(theme.sendText)
         recordDeleteButton.setColorFilter(theme.statusColor)
-        recordPauseButton.setColorFilter(0xFFFF4D67.toInt())
+        recordPauseButton.setColorFilter(theme.statusColor)
         recordSendButton.backgroundTintList = android.content.res.ColorStateList.valueOf(theme.sendTint)
         recordSendButton.setColorFilter(theme.sendText)
         recordTimerText.setTextColor(theme.statusColor)
