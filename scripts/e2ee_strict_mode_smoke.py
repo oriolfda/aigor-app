@@ -55,7 +55,7 @@ def main():
         sys.exit(2)
 
     bridge_script = os.path.abspath(sys.argv[1])
-    env_prefix = sys.argv[2].strip().upper()
+    env_prefix = sys.argv[2].strip().upper().replace("-", "_")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("127.0.0.1", 0))
@@ -64,14 +64,22 @@ def main():
 
     tmpdir = tempfile.mkdtemp(prefix="e2ee-strict-smoke-")
     env = os.environ.copy()
-    bridge_prefix = "OPENCLAW_APP" if env_prefix == "OPENCLAW_APP" else "AIGOR"
+    if env_prefix in ("OPENCLAW_APP", "OPENCLAW"):
+        bridge_prefix = "OPENCLAW_APP"
+        e2ee_prefix = "OPENCLAW_APP"
+    elif env_prefix in ("AIGOR_APP", "AIGOR"):
+        bridge_prefix = "AIGOR"
+        e2ee_prefix = "AIGOR_APP"
+    else:
+        raise RuntimeError(f"unsupported ENV_PREFIX={env_prefix} (expected OPENCLAW_APP/OPENCLAW or AIGOR_APP/AIGOR)")
+
     env[f"{bridge_prefix}_BRIDGE_HOST"] = "127.0.0.1"
     env[f"{bridge_prefix}_BRIDGE_PORT"] = str(port)
     env[f"{bridge_prefix}_BRIDGE_TOKEN"] = token
-    env[f"{env_prefix}_E2EE_REQUIRED"] = "true"
-    env[f"{env_prefix}_E2EE_KEYSTORE"] = os.path.join(tmpdir, "keystore.json")
-    env[f"{env_prefix}_E2EE_RATCHET_STORE"] = os.path.join(tmpdir, "ratchet.json")
-    env[f"{env_prefix}_E2EE_OTK_STORE"] = os.path.join(tmpdir, "otk.json")
+    env[f"{e2ee_prefix}_E2EE_REQUIRED"] = "true"
+    env[f"{e2ee_prefix}_E2EE_KEYSTORE"] = os.path.join(tmpdir, "keystore.json")
+    env[f"{e2ee_prefix}_E2EE_RATCHET_STORE"] = os.path.join(tmpdir, "ratchet.json")
+    env[f"{e2ee_prefix}_E2EE_OTK_STORE"] = os.path.join(tmpdir, "otk.json")
 
     proc = subprocess.Popen([sys.executable, bridge_script], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
