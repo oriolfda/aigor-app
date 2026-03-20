@@ -489,10 +489,13 @@ def _ratchet_apply_peer_pub(session_id: str, peer_pub_b64: str, mix_material: by
         recv["lastPeerRatchetPub"] = peer_pub_b64
         recv["ratchetStep"] = step
 
-        # Controlled re-seed on DH ratchet change: drop recv chain seed/counter so
-        # next inbound messages are derived from the new ratchet material only.
+        # Controlled re-seed on DH ratchet change:
+        # - drop recv chain seed/counter so next inbound derives from new ratchet material only
+        # - drop send chain seed/counter to avoid stale outbound chain reuse across DH steps
         st["recvChainSeed"] = ""
         recv["chainCounter"] = 0
+        st["sendChainSeed"] = ""
+        st["send"]["chainCounter"] = 0
 
         if mix_material:
             import hashlib
