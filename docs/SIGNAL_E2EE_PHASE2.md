@@ -79,7 +79,7 @@ Implement end-to-end encryption for app↔bridge communications inspired by Sign
 - [x] Session base-key persistence on client for encrypted reply recovery after lifecycle changes.
 
 ### Next block
-- [ ] Header-based skipped-key cache (`headerId + counter`).
+- [x] Header-based skipped-key cache (`headerId + counter`) with header-scoped retrieval/consumption.
 - [ ] Full Double Ratchet state machine (`rootKey`, `sendChainKey`, `recvChainKey`, counters) with DH-step ratcheting.
 
 ### Stage E

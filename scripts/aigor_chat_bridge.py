@@ -819,12 +819,13 @@ class Handler(BaseHTTPRequestHandler):
         session_id = (data.get("sessionId") or DEFAULT_SESSION).strip() or DEFAULT_SESSION
 
         if E2EE_REQUIRED:
-            has_ciphertext = bool(e2ee_req and e2ee_req.get("ciphertext"))
+            raw_ciphertext = e2ee_req.get("ciphertext") if e2ee_req else None
+            has_ciphertext = isinstance(raw_ciphertext, str) and bool(raw_ciphertext.strip())
             if not has_ciphertext:
                 self._send(400, {
                     "ok": False,
                     "error": "e2ee_ciphertext_required",
-                    "message": "Server requires encrypted message body (no plaintext fallback)."
+                    "message": "Server requires non-empty string ciphertext (no plaintext fallback)."
                 })
                 return
             if isinstance(data.get("attachment"), dict) and not isinstance(data.get("e2eeAttachment"), dict):
@@ -836,13 +837,27 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
         message = (data.get("message") or "").strip()
-        if e2ee_req and e2ee_req.get("ciphertext") and not str(e2ee_req.get("headerId", "")).strip():
-            self._send(400, {
-                "ok": False,
-                "error": "e2ee_header_required",
-                "message": "Encrypted envelope requires headerId."
-            })
-            return
+        if e2ee_req and e2ee_req.get("ciphertext"):
+            raw_header_id = e2ee_req.get("headerId", "")
+            if not isinstance(raw_header_id, str) or not raw_header_id.strip():
+                self._send(400, {
+                    "ok": False,
+                    "error": "e2ee_header_required",
+                    "message": "Encrypted envelope requires non-empty string headerId."
+                })
+                return
+
+
+        if e2ee_req and e2ee_req.get("ciphertext"):
+            raw_counter = e2ee_req.get("counter", 0)
+            # Strict hardening: require JSON integer type (no strings/floats/bools) and >0.
+            if isinstance(raw_counter, bool) or not isinstance(raw_counter, int) or raw_counter <= 0:
+                self._send(400, {
+                    "ok": False,
+                    "error": "e2ee_counter_required",
+                    "message": "Encrypted envelope requires a positive integer counter."
+                })
+                return
 
         if e2ee_req and (not message) and e2ee_req.get("ciphertext"):
             try:

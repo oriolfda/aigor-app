@@ -14,6 +14,10 @@ SCRIPTS = [
     ["e2ee_seed_progress_smoke.py", BRIDGE, "AIGOR_APP"],
     ["e2ee_strict_mode_smoke.py", BRIDGE, "AIGOR_APP"],
     ["e2ee_attachment_smoke.py", BRIDGE, "AIGOR_APP"],
+    ["e2ee_dh_step_smoke.py", BRIDGE, "AIGOR_APP"],
+    ["e2ee_state_lifecycle_smoke.py", BRIDGE, "AIGOR_APP"],
+    ["e2ee_skipped_cache_lifecycle_smoke.py", BRIDGE, "AIGOR_APP"],
+    ["e2ee_window_eviction_smoke.py", BRIDGE, "AIGOR_APP"],
 ]
 
 
